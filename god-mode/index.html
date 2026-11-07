@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI-DLC Mission Control</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap">
+<style>
+@property --h{syntax:'<number>';inherits:true;initial-value:90}
+:root{--bg:#e6e6e3;--tx:#151515;--mu:#666;--cd:rgba(255,255,255,.55);--ln:rgba(0,0,0,.09);--ac:#c9e82e;--ok:#2f8f3a;--er:#e0523f;transition:--h 1.2s;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#080a0d;--tx:#f0f0ec;--mu:#9096a0;--cd:rgba(255,255,255,.07);--ln:rgba(255,255,255,.1);--ok:#6fdc7a;--er:#ff7a6b}}
+:root[data-theme="dark"]{--bg:#080a0d;--tx:#f0f0ec;--mu:#9096a0;--cd:rgba(255,255,255,.07);--ln:rgba(255,255,255,.1);--ok:#6fdc7a;--er:#ff7a6b}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:400 14px/1.45 'Inter Tight',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.m{font-family:'JetBrains Mono',monospace;font-weight:300}.mu{color:var(--mu)}
+.blob{position:fixed;width:55vmax;height:55vmax;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;animation:fl 18s ease-in-out infinite alternate;background:hsl(var(--h) 85% 58%/.38)}
+.b1{top:-20vmax;left:-15vmax}.b2{bottom:-25vmax;right:-15vmax;background:hsl(calc(var(--h) + 70) 85% 60%/.32);animation-duration:23s}
+@keyframes fl{to{transform:translate(8vmax,6vmax) scale(1.15)}}
+@keyframes in{from{opacity:0;transform:translateY(26px) scale(.97);filter:blur(10px)}}@keyframes sp{to{transform:rotate(360deg)}}@keyframes pl{0%{box-shadow:0 0 0 0 var(--ac)}70%,100%{box-shadow:0 0 0 10px transparent}}@keyframes sh{to{background-position:-200% 0}}
+header{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 18px;flex-wrap:wrap}
+.logo{font-weight:500;display:flex;gap:8px;align-items:center}.logo i{width:10px;height:10px;border-radius:50%;background:var(--ac);animation:pl 2s infinite}
+.hs{margin-left:auto;display:flex;gap:8px}
+.chip{padding:3px 11px;border-radius:14px;font-size:11px;background:var(--ln);color:var(--mu)}.chip.ok{background:var(--ac);color:#151515}.chip.r{background:var(--er);color:#fff}
+main{position:relative;z-index:1;flex:1;overflow:auto;padding:6px 18px 130px}
+section{display:none}section.on{display:block;animation:in .7s cubic-bezier(.2,.8,.2,1)}
+h1{font-weight:300;font-size:clamp(28px,5vw,44px);margin:0;letter-spacing:-1px}.sub{color:var(--mu);margin:2px 0 18px}
+.g{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}.g2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.card{background:var(--cd);border:1px solid var(--ln);border-radius:30px;padding:20px;backdrop-filter:blur(18px)}
+.gr{color:#fff;border:0;background-size:220% 220%;animation:dr 9s ease-in-out infinite}@keyframes dr{50%{background-position:100% 60%}}
+.g1{background-image:linear-gradient(160deg,#f1b36b,#9fc45a 55%,#3f9a3a)}.g2c{background-image:linear-gradient(160deg,#8fa8d8,#f08a3c 65%,#f2a24f)}.g3{background-image:linear-gradient(135deg,#f3c79a,#ee9a62 50%,#d65fb4)}
+.big{font:300 58px/1.1 'JetBrains Mono',monospace}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--ln);background:var(--cd);border-radius:22px;padding:10px 16px;min-height:44px;transition:.25s}button:hover{transform:translateY(-2px)}button:active{transform:scale(.95)}
+button.p{background:var(--ac);color:#151515;border:0;font-weight:500}
+input,textarea{width:100%;background:var(--cd);border:1px solid var(--ln);border-radius:18px;padding:12px 14px;outline:0}input:focus,textarea:focus{border-color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar{height:7px;border-radius:4px;background:var(--ln);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+/* dock */
+#dock{position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 20px);display:flex;gap:4px;padding:6px;border-radius:32px;background:var(--cd);border:1px solid var(--ln);backdrop-filter:blur(24px);overflow:auto;scrollbar-width:none}
+#dock a{padding:11px 16px;border-radius:24px;color:var(--mu);text-decoration:none;white-space:nowrap;transition:.35s;min-height:44px;display:flex;align-items:center}#dock a.on{background:var(--tx);color:var(--bg)}
+/* mission */
+.orbit{position:relative;width:min(400px,92%);aspect-ratio:1;margin:6px auto}
+.ring{position:absolute;border:1px dashed var(--mu);border-radius:50%;animation:sp var(--d) linear infinite;opacity:.9}
+.nd{position:absolute;top:-19px;left:calc(50% - 19px);width:38px;height:38px;padding:0;border-radius:50%;background:var(--ac);color:#151515;font-size:11px;font-weight:500;animation:sp var(--d) linear infinite reverse}.nd.b{top:auto;bottom:-19px}
+.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 70%,hsl(var(--h) 90% 60%/.45));animation:sp 5s linear infinite}
+.core{position:absolute;inset:36%;border-radius:50%;display:grid;place-items:center;text-align:center;background:radial-gradient(circle,var(--ac),#3f9a3a);color:#151515;font:500 20px/1.1 'Inter Tight';animation:pl 2.4s infinite}.core small{font-size:10px;font-weight:400}
+.feed{font:300 12px/1.5 'JetBrains Mono',monospace;color:var(--mu);height:190px;overflow:hidden}.feed div{animation:in .5s;padding:2px 0}.feed b{color:var(--tx);font-weight:400}
+/* calendar */
+.calw{perspective:900px;overflow:hidden;padding:30px 10px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;transform:rotateX(28deg) rotateZ(-7deg);transform-origin:center}
+.pill{height:62px;padding:0;border-radius:24px;position:relative;background:var(--ln);color:var(--mu)}.pill i{position:absolute;top:8px;left:calc(50% - 4px);width:8px;height:8px;border-radius:50%;background:#d65fb4}.pill.on{background:#fff;color:#151515;transform:translateY(-8px) scale(1.1);box-shadow:0 14px 30px rgba(0,0,0,.25)}
+/* new */
+#nt{position:relative;overflow:hidden;isolation:isolate}#nt::before,#nt::after{content:'';position:absolute;inset:0;z-index:-1;transition:opacity .8s}
+#nt::before{background:linear-gradient(150deg,rgba(159,196,90,.55),rgba(63,154,58,.25))}#nt::after{background:linear-gradient(150deg,rgba(240,138,60,.6),rgba(214,95,180,.3));opacity:0}#nt[data-k=Bug]::after{opacity:1}
+.kb{flex:1;font-size:20px;min-height:70px;border-radius:26px}.kb.on{background:var(--tx);color:var(--bg)}
+#scan{position:relative;height:0;overflow:hidden;transition:.5s}#scan.on{height:60px}#scan::after{content:'';position:absolute;left:0;right:0;height:3px;background:var(--ac);box-shadow:0 0 18px 4px var(--ac);animation:sn 1.2s ease-in-out infinite alternate}@keyframes sn{from{top:0}to{top:56px}}
+.kan{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.kan>div{background:var(--ln);border-radius:20px;padding:10px;min-height:120px}.kc{background:var(--cd);border:1px solid var(--ln);border-radius:16px;padding:10px;margin-top:8px;animation:in .5s;font-size:13px}
+/* actions */
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px;padding:20px 6px}
+.tile{height:130px;border-radius:30px;border:0;color:#fff;text-align:left;display:flex;flex-direction:column;justify-content:space-between;padding:16px;position:relative;overflow:hidden;transition:transform .15s}.tile b{font:300 30px 'JetBrains Mono'}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rp .7s forwards;pointer-events:none}@keyframes rp{to{transform:scale(5);opacity:0}}
+/* insights */
+.bars{display:flex;align-items:flex-end;gap:9px;height:190px}.bars i{flex:1;border-radius:14px 14px 4px 4px;background:linear-gradient(var(--ac),var(--ok));height:0;transition:height 1.2s cubic-bezier(.2,.8,.2,1)}
+.dn circle{fill:none;stroke-width:14;transition:stroke-dasharray 1.4s cubic-bezier(.2,.8,.2,1)}
+canvas{width:100%;height:240px;display:block}
+/* cr */
+.stack{position:relative;height:330px;max-width:420px;margin:10px auto}.cc{position:absolute;inset:0;border-radius:32px;padding:24px;background:var(--cd);border:1px solid var(--ln);backdrop-filter:blur(18px);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s;touch-action:pan-y;user-select:none;display:flex;flex-direction:column;justify-content:space-between}
+.cc .df{font:300 12px/1.6 'JetBrains Mono';background:var(--ln);border-radius:16px;padding:10px}.ad{color:var(--ok)}.rm{color:var(--er)}
+/* collab */
+.board{position:relative;height:230px;border-radius:26px;background:radial-gradient(var(--ln) 1.5px,transparent 1.5px) 0 0/22px 22px;overflow:hidden}
+.cur{position:absolute;transition:left 1.6s cubic-bezier(.4,0,.2,1),top 1.6s cubic-bezier(.4,0,.2,1);left:20%;top:30%}.cur::before{content:'';display:block;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:16px solid var(--c);transform:rotate(-25deg)}.cur span{display:block;background:var(--c);color:#151515;border-radius:10px;padding:2px 9px;font-size:11px;margin:2px 0 0 10px}
+.stk{position:absolute;padding:10px 12px;border-radius:12px;background:#f6e26b;color:#151515;font-size:12px;transform:rotate(-3deg);max-width:130px}
+.av{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;color:#151515;margin-right:-8px;border:2px solid var(--bg)}
+.mg{padding:9px 13px;border-radius:18px;background:var(--ln);max-width:82%;margin:6px 0;animation:in .4s}.mg.me{margin-left:auto;background:var(--ac);color:#151515}
+.dots span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--mu);animation:pl 1s infinite}
+/* farm */
+.ph{position:relative;border-radius:30px;border:3px solid var(--tx);padding:10px 8px;background:var(--cd);cursor:pointer;transition:.3s}.ph:hover{transform:translateY(-4px) rotate(-1deg)}.ph::before{content:'';display:block;width:30%;height:5px;border-radius:3px;background:var(--tx);margin:0 auto 8px}
+.scr{height:110px;border-radius:18px;background:linear-gradient(110deg,var(--ln) 25%,var(--cd) 50%,var(--ln) 75%);background-size:200% 100%;animation:sh 1.6s linear infinite}
+/* terminal */
+.win{background:#07090b;color:#d8f56a;border-radius:24px;overflow:hidden;border:1px solid var(--ln)}.wb{display:flex;gap:7px;padding:12px 16px;background:#14181d}.wb i{width:11px;height:11px;border-radius:50%;background:#ff6b5f}.wb i:nth-child(2){background:#ffc14a}.wb i:nth-child(3){background:#43d36b}
+.tm{height:360px;overflow:auto;padding:14px 16px;font:300 13px/1.6 'JetBrains Mono',monospace}.tm input{background:none;border:0;padding:0;width:75%;color:#fff;display:inline;border-radius:0}
+.toast{position:fixed;z-index:9;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--tx);color:var(--bg);padding:11px 20px;border-radius:24px;transition:.4s}.toast.on{transform:translate(-50%,0);opacity:1}
+#bk,#fw,#dv,#sc{min-height:36px;padding:6px 14px}#fw.on{background:var(--ac);color:#151515}
+#cnt,#mt,#post{display:none}body.show #dock{display:none}body.show main{padding-bottom:200px}
+body.show #cnt{display:block;position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:20px;z-index:6;background:#5a3b22;color:#fff;font-size:13px}
+body.show #mt{display:grid;position:fixed;z-index:6;right:20px;bottom:calc(170px + env(safe-area-inset-bottom,0px));width:44px;height:44px;padding:0;place-items:center;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0}#mt.off{text-decoration:line-through;opacity:.7}
+body.show #post{display:block;position:fixed;z-index:6;left:0;right:0;bottom:0;padding:8px 18px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--ln)}
+.pd{display:flex;justify-content:center}.pd button{width:18px;min-height:24px;padding:0;border:0;background:none}.pd button::before{content:'';display:block;width:7px;height:7px;margin:auto;border-radius:50%;background:var(--mu);transition:.3s}.pd button.on::before{background:#4f5bff;transform:scale(1.4)}
+.pc{display:flex;gap:8px;flex-wrap:wrap}.pc button{padding:6px 14px;min-height:40px}.pc button.on{background:var(--ac);color:#151515}.pc .sv{margin-left:auto}
+body[data-dev=ipad] main{margin:8px 16px;border:10px solid #0a0a0a;border-radius:30px;transform:perspective(1500px) rotateX(6deg) rotateY(-9deg) rotateZ(-1.5deg);box-shadow:0 30px 60px rgba(0,0,0,.35);transition:transform .8s}
+body[data-dev=phone] main{width:min(440px,100%);margin:8px auto;border:10px solid #0a0a0a;border-radius:46px;transform:perspective(1200px) rotateY(-12deg) rotateZ(-3deg);box-shadow:0 30px 60px rgba(0,0,0,.35);transition:transform .8s}
+.pill{height:50px}.pill.f{opacity:.3}.pill i{width:18px;height:18px;top:6px;left:calc(50% - 9px);font:500 9px/18px 'Inter Tight';text-align:center;color:#fff;border-radius:6px}.rp{padding:10px 0}
+.dh{display:grid;grid-template-columns:210px 1fr;gap:16px}@media (max-width:820px){.dh{grid-template-columns:1fr}}
+.dsb{display:flex;flex-direction:column;gap:6px}.fl{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:20px;background:var(--cd);border:1px solid var(--ln);cursor:pointer;min-height:44px;transition:.3s}.fl.on{background:#fff;color:#151515}.fl u{text-decoration:none;color:var(--mu);font-size:11px}
+.pro{padding:14px;border-radius:22px;background:var(--cd);border:1px solid var(--ln);margin-top:6px}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:16px 0 10px;flex-wrap:wrap}.hd h1{margin:0}
+.st4{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;margin:4px 0 12px}.st4>div{font:300 34px 'JetBrains Mono';color:var(--mu)}.st4 small{font:400 11px 'Inter Tight'}
+.tlx{position:relative;height:90px;border-radius:24px;background:var(--cd);border:1px solid var(--ln);overflow:hidden;cursor:pointer;margin-bottom:6px}.tlx i{position:absolute;width:6px;height:6px;border-radius:50%}
+.fp{position:absolute;top:22px;padding:8px 14px;border-radius:20px;background:#fff;color:#151515;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:left .7s cubic-bezier(.2,.8,.2,1)}
+.tc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
+.ti{border-radius:28px;padding:16px;min-height:180px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:8px;overflow:hidden;position:relative}.ti.bm{color:var(--tx);background:var(--cd);border:1px solid var(--ln)}
+.dots5{height:12px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.7) 0 2px,transparent 2px 7px)}.rul{height:22px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.75) 0 1px,transparent 1px 6px)}
+.orb{width:72px;height:72px;border-radius:50%;margin:6px auto;box-shadow:inset -8px -10px 18px rgba(0,0,0,.25),0 14px 24px rgba(0,0,0,.18);animation:fl 5s ease-in-out infinite alternate}
+input[type=range]{padding:0;border:0;background:none;accent-color:#c9e82e;min-height:30px}
+.vc{border-radius:30px;padding:18px;min-height:230px;position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:space-between}.vd{background:linear-gradient(160deg,#2a2d33,#0f1114)}.vy{background:linear-gradient(160deg,#dccb76,#b99a52 60%,#a9a68e)}
+.arw{position:absolute;top:14px;right:14px;width:40px;height:40px;padding:0;border-radius:14px;background:rgba(255,255,255,.14);color:#fff;border:0}
+.ld{width:9px;height:9px;border-radius:50%;background:#d6f43a;box-shadow:0 0 14px #d6f43a}
+.nb{position:relative;height:92px;border-radius:28px;background:var(--cd);border:1px solid var(--ln);padding:14px;margin:14px 0}.nbb{position:relative;height:100%;border-radius:18px;background:linear-gradient(90deg,#86a860,#b7cd96);border-left:5px solid #d6f43a;border-right:5px solid #d6f43a;overflow:hidden;color:#fff}
+.nbb span{position:absolute;bottom:4px;font-size:10px}.nbb i{position:absolute;top:8px;width:6px;height:6px;border-radius:50%;background:#fff}.nw{position:absolute;top:0;padding:1px 8px;background:#d6f43a;color:#151515;font-size:10px;animation:nw 18s linear infinite alternate}@keyframes nw{from{left:3%}to{left:68%}}
+.wv path{fill:none;stroke:rgba(255,255,255,.85);stroke-width:1.2;stroke-dasharray:6 4;animation:dsh 3s linear infinite}@keyframes dsh{to{stroke-dashoffset:-40}}
+.photo{background:radial-gradient(ellipse 34% 30% at 64% 24%,#15100e 0 62%,transparent 64%),radial-gradient(ellipse 55% 36% at 66% 74%,#3a2a22,transparent 72%),linear-gradient(160deg,#ebe8e1,#b9b3a6)}.photo .sh2{position:absolute;inset:auto 0 0;padding:14px 18px;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.ic5{position:absolute;right:14px;bottom:14px;display:grid;gap:6px}.ic5 button{width:44px;height:44px;padding:0;border:0;border-radius:14px;background:rgba(255,255,255,.2);color:#fff}.ic5 .on{background:#d6f43a;color:#151515}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style></head><body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<header><button id="bk" aria-label="Back">‹</button><span class="logo"><i></i>AI-DLC Mission Control</span><span class="mu m" id="mus">♪ Orbit Loop · Studio Mix</span><div class="hs"><button id="fw">Follow</button><button id="dv">Device: off</button><button id="sc">Showcase</button><span class="chip ok">4 agents live</span><span class="chip" id="clk"></span></div></header>
+<main id="main">
+<section id="mission"><h1>Mission Control</h1><div class="sub">Tap any agent in orbit · sample data</div><div class="g2">
+<div class="card"><div class="orbit"><div class="sweep"></div>
+<div class="ring" style="inset:0;--d:26s"><button class="nd" data-a="planner">PL</button><button class="nd b" data-a="tester">TS</button></div>
+<div class="ring" style="inset:15%;--d:17s"><button class="nd" data-a="coder" style="background:#f2a24f">CD</button><button class="nd b" data-a="deployer" style="background:#d65fb4">DP</button></div>
+<div class="ring" style="inset:30%;--d:11s"><button class="nd" data-a="reviewer" style="background:#8fa8d8">RV</button></div>
+<div class="core"><div>98%<br><small>health</small></div></div></div></div>
+<div class="card"><div id="ai" style="min-height:54px"><b>Planner</b><div class="mu">Tap a node to inspect an agent.</div></div><div class="mu" style="margin:10px 0 4px">Event stream <span class="chip ok">live</span></div><div class="feed" id="feed"></div></div></div></section>
+
+<section id="dashboard"><h1>Dashboard</h1><div class="sub">⧖ Every minute of delay costs money. We designed for the seconds that matter. Your whole lifecycle. One screen.</div>
+<div class="g"><div class="card gr g1"><div>AI-DLC score</div><div class="big" data-n="70">0</div>on track</div><div class="card gr g2c"><div>Cycle time, days</div><div class="big" data-n="3.2" data-d="1">0</div>per bolt</div><div class="card gr g3"><div>Approval gates</div><div class="big" data-n="2">0</div>waiting on you</div></div>
+<div class="g2" style="margin-top:14px"><div class="card"><div style="font-size:18px">Date of release</div><div class="row" style="flex-wrap:wrap;align-items:flex-start"><div class="calw" style="flex:2 1 280px"><div class="cal" id="cal"></div></div><div class="rp" style="flex:1 1 190px"><div class="mu">Release</div><b id="rpn" style="font-size:18px;display:block;margin:4px 0 10px">Bolt 8 · Auth service</b><div class="row" id="rm"><button class="p">Canary</button><button>Blue-green</button><button>Rolling</button></div><button class="p" id="sched" style="margin-top:12px;width:100%">Schedule release</button></div></div><div id="ci" class="mu">Today · Bolt 8 · Auth service</div></div><div class="card" id="ph"></div></div></section>
+
+<section id="data"><div class="dh"><aside class="dsb"><div class="m" style="font-size:18px;margin-bottom:6px">aidlc</div><div class="row" id="dt"><button class="p">Data</button><button>Records</button></div><div id="dl"></div>
+<div class="pro"><span class="chip ok">Go Pro</span><div style="margin:8px 0">Free premium subscription. See every phase more clearly.</div><div class="row" style="justify-content:space-between"><span class="m mu" id="pdays">14 days</span><button id="try">Try it</button></div></div></aside>
+<div><div class="hd"><h1>Atlas Squad</h1><div class="row"><button id="cart">Cart <b id="cn">0</b></button><button aria-label="Profile">◔</button></div></div>
+<div class="st4"><div><span class="chip ok">Total</span> <span data-n="106">0</span></div><div>80<small> Optimal</small></div><div>21<small> In range</small></div><div>5<small> Out of range</small></div></div>
+<div class="tlx" id="tlx"><span class="mu m" style="position:absolute;left:12px;top:8px;font-size:11px">April</span><span class="mu m" style="position:absolute;right:12px;top:8px;font-size:11px">June</span><div class="fp" id="fp" style="left:38%">↗ Delivery improving<br><small class="mu">+12% last 30 days</small></div></div>
+<div id="dm"><div class="tc">
+<div class="ti" style="background:linear-gradient(180deg,#f1b36b,#9fc45a 50%,#3f9a3a)"><div>AI-DLC score</div><div style="text-align:center"><div class="big" data-n="70">0</div>On track</div><div class="dots5"></div></div>
+<div class="ti" style="background:linear-gradient(180deg,#8fa8d8,#f08a3c 70%,#f2a24f)"><div>Delivery age</div><div style="text-align:center"><div class="big">25</div>2.5 years younger</div><div class="rul"></div></div>
+<div class="ti bm"><div>Your build is pending</div><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><span class="m" style="font-size:28px" id="rv">7-10</span> <span class="mu">min</span><input type="range" id="rg" min="1" max="10" value="7" aria-label="Wait time"><div class="mu" style="font-size:11px">Faster than your last build.</div></div><svg viewBox="0 0 40 90" style="height:90px"><rect x="10" y="2" width="20" height="9" rx="3" fill="#bbb"/><rect x="12" y="6" width="16" height="72" rx="8" fill="rgba(255,255,255,.7)" stroke="#999"/><rect x="14" y="44" width="12" height="32" rx="6" fill="#e0782a"/></svg></div></div>
+<div class="ti bm"><div class="row" style="justify-content:space-between"><span>Upload specs</span><button id="up" aria-label="Upload">+</button></div><svg viewBox="0 0 80 50" style="width:90px"><rect x="8" y="12" width="46" height="34" rx="5" fill="rgba(255,255,255,.5)" stroke="var(--mu)" transform="rotate(-6 30 30)"/><rect x="20" y="8" width="46" height="34" rx="5" fill="rgba(255,255,255,.85)" stroke="var(--mu)"/></svg><div class="mu">Existing specs <b id="ec">2</b> files</div></div>
+<div class="ti" style="background:linear-gradient(160deg,#ff8fb0,#d65fb4 55%,#ff5f7e)"><div class="row" style="justify-content:space-between"><span>Connect tracker</span><button id="ct" style="background:rgba(255,255,255,.3);color:#fff;border:0" aria-label="Connect">+</button></div><svg viewBox="0 0 100 100" style="width:84px;margin:auto" fill="none" stroke="#fff"><circle cx="50" cy="50" r="42" opacity=".4" style="animation:pl 2s infinite"/><circle cx="50" cy="50" r="26" opacity=".7"/><circle cx="50" cy="50" r="9" fill="#fff"/></svg><div class="m" id="cts">((( • )))</div></div></div>
+<div class="hd"><div><b style="font-size:20px">Pipeline markers</b><div class="mu">A snapshot of what is happening inside your delivery</div></div><button class="sa">See all</button></div>
+<div class="tc"><div class="ti bm"><span class="chip">Pipeline health</span><div><span class="m" style="font-size:32px">103</span> ms<div class="mu">Lead time</div></div><div class="rul" style="background:repeating-linear-gradient(90deg,var(--mu) 0 1px,transparent 1px 6px)"></div></div>
+<div class="ti bm"><span class="chip">Dependencies</span><div><span class="m" style="font-size:32px">43</span> pkgs<div class="mu">Outdated</div></div><svg viewBox="0 0 120 30" fill="none" stroke="var(--tx)"><path d="M0 15Q15 0 30 15T60 15T90 15T120 15"/></svg></div>
+<div class="ti bm"><span class="chip">Runtime</span><div><span class="m" style="font-size:32px">42</span> ms<div class="mu">p50 latency</div></div><div class="dots5" style="background:repeating-linear-gradient(90deg,var(--mu) 0 2px,transparent 2px 7px)"></div></div></div>
+<div class="hd"><div><b style="font-size:20px">Top agents for you</b><div class="mu">Support your team with agents picked for you</div></div><button class="sa">See all</button></div><div class="tc" id="ag"></div></div>
+<div id="rc" class="card" style="display:none"><b style="font-size:20px">Records</b><div class="row" style="justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--ln)"><span>spec-auth.md</span><span class="chip">Existing</span></div><div class="row" style="justify-content:space-between;padding:12px 0"><span>architecture.pdf</span><span class="chip">Existing</span></div></div></div></div></section>
+
+<section id="vitals"><h1>Vitals</h1><div class="sub">Pipeline data that looks less like a lab report and more like a product people love</div>
+<div class="g2"><div class="vc vd"><div><div style="font-size:34px">16</div><div class="mu">Releases</div></div><button class="arw" aria-label="Open">↗</button><svg viewBox="0 0 120 80" style="width:150px;margin:auto;display:block" fill="none" stroke="rgba(255,255,255,.7)"><ellipse cx="60" cy="12" rx="48" ry="9"/><ellipse cx="60" cy="22" rx="40" ry="8"/><ellipse cx="60" cy="32" rx="32" ry="7"/><ellipse cx="60" cy="42" rx="25" ry="6"/><ellipse cx="60" cy="52" rx="18" ry="5"/><ellipse cx="60" cy="61" rx="11" ry="4"/><path d="M60 6V66"/></svg><div class="ld"></div></div>
+<div class="vc vy"><div><div style="font-size:34px">+2000</div><div>Measurements</div></div><button class="arw" aria-label="Open">↗</button><svg viewBox="0 0 100 100" style="width:130px;margin:auto;display:block;animation:sp 24s linear infinite" fill="none" stroke="rgba(255,255,255,.85)"><ellipse cx="50" cy="52" rx="38" ry="30"/><ellipse cx="50" cy="52" rx="28" ry="38"/><ellipse cx="50" cy="52" rx="16" ry="42"/><ellipse cx="50" cy="52" rx="5" ry="42"/></svg><div class="ld"></div></div></div>
+<div class="nb"><div class="nbb"><div class="nw">Now</div><i style="left:4%"></i><i style="left:27%"></i><i style="left:50%"></i><i style="left:73%"></i><i style="left:94%;opacity:.4"></i><span style="left:4%">12:55</span><span style="left:27%">13:00</span><span style="left:50%">13:05</span><span style="left:73%">13:10</span><span style="left:92%">13:15</span></div></div>
+<div class="tc"><div class="vc" style="background:linear-gradient(160deg,#4e8a4a,#9cba6e)"><div class="row" style="justify-content:space-between"><span>Pipeline age</span><b class="m">9:41</b><span class="ld" style="width:16px;height:16px;background:none;border:2px solid #fff;box-shadow:none;animation:pl 1.6s infinite"></span></div><svg viewBox="0 0 200 70" fill="none" stroke="rgba(255,255,255,.6)"><path d="M10 70Q50 -10 100 70"/><path d="M40 70Q70 10 100 70"/><path d="M190 70Q150 -10 100 70"/><path d="M160 70Q130 10 100 70"/></svg><div style="font-size:36px">25<small style="font-size:14px"> min</small></div></div>
+<div class="vc" style="background:var(--cd);color:var(--tx);border:1px solid var(--ln)"><div><div class="m" style="font-size:40px">120</div>builds per hour<div class="mu">Optimal</div></div><div class="nbb" style="height:34px;border-radius:12px"><span style="left:8px">13:15</span></div></div>
+<div class="vc" style="background:linear-gradient(160deg,#b8b2a8,#e0b24f)"><span>Cache hit</span><svg class="wv" viewBox="0 0 200 70"><path d="M0 35Q25 0 50 35T100 35T150 35T200 35"/><path d="M0 35Q25 70 50 35T100 35T150 35T200 35" style="animation-direction:reverse"/><path d="M0 35Q25 14 50 35T100 35T150 35T200 35"/></svg><div class="row" style="justify-content:space-between"><b style="font-size:34px">99</b><span>Normal</span></div></div>
+<div class="vc photo"><span class="chip" id="tm5" style="align-self:flex-start;background:rgba(0,0,0,.5);color:#fff">⏱ 5:00</span><div class="sh2">Code, Tests, Ops<br>Data: Insights</div></div>
+<div class="vc" style="background:linear-gradient(160deg,#b79c5c,#e4896a)"><span>Tech debt (hs-CRP)</span><svg viewBox="0 0 200 70" fill="none" stroke="rgba(255,255,255,.65)"><path d="M0 70Q60 -20 160 70"/><path d="M40 70Q90 10 170 70"/></svg><b style="font-size:36px">0.5</b><div class="ic5" id="ic"><button class="on" aria-label="Pulse">∿</button><button aria-label="Tests">▦</button><button aria-label="Ops">✺</button></div></div></div></section>
+
+<section id="new"><h1>New Task</h1><div class="sub">Feature or bug. An agent takes it from here.</div>
+<div class="card" id="nt" data-k="Feature"><div class="row" style="flex-wrap:nowrap"><button class="kb p on" data-k="Feature">Feature</button><button class="kb" data-k="Bug">Bug</button></div>
+<input id="ttl" style="margin:12px 0" placeholder="Title, e.g. Add SSO login"><textarea id="dsc" rows="3" placeholder="What should happen? Paste a stack trace for bugs."></textarea>
+<div class="row" id="sv" style="margin:12px 0"><button class="p">Low</button><button>High</button><button>Critical</button><button class="p" id="go" style="margin-left:auto">Dispatch to AI</button></div>
+<div id="scan"></div><div class="feed" id="nout" style="height:auto;max-height:110px"></div>
+<div class="kan"><div id="q"><b>Queued</b></div><div id="b"><b>Building</b></div><div id="r"><b>In review</b></div></div></div></section>
+
+<section id="actions"><h1>Quick Actions</h1><div class="sub">Slide your finger across the dock</div><div class="qa" id="qa"></div></section>
+
+<section id="insights"><h1>Insights</h1><div class="sub">What the AI learned about your team</div><div class="g2">
+<div class="card"><svg viewBox="0 0 160 160" class="dn" style="width:200px;display:block;margin:auto;transform:rotate(-90deg)"><circle cx="80" cy="80" r="64" pathLength="100" stroke="var(--ln)"/><circle id="d1" cx="80" cy="80" r="64" pathLength="100" stroke="#c9e82e" stroke-dasharray="0 100"/><circle id="d2" cx="80" cy="80" r="64" pathLength="100" stroke="#f08a3c" stroke-dasharray="0 100" stroke-dashoffset="-52"/><circle id="d3" cx="80" cy="80" r="64" pathLength="100" stroke="#d65fb4" stroke-dasharray="0 100" stroke-dashoffset="-83"/></svg><div class="row" style="justify-content:center;margin-top:10px"><span class="chip ok">Feature 52%</span><span class="chip">Bug 31%</span><span class="chip">Chore 17%</span></div></div>
+<div class="card"><div>Bolts shipped per week</div><div class="bars" id="ib"></div><div class="m" id="tw" style="margin-top:14px;min-height:40px"></div></div></div></section>
+
+<section id="telemetry"><h1>Telemetry</h1><div class="sub">Streaming in real time · simulated</div><div class="card"><canvas id="cv"></canvas><div class="row m" style="margin-top:10px"><span class="chip ok" id="l1"></span><span class="chip" id="l2"></span></div></div></section>
+
+<section id="cr"><h1>CR List</h1><div class="sub">Swipe right to approve, left to reject</div><div class="stack" id="stk"></div><div class="row" style="justify-content:center"><button id="rj">Reject</button><button class="p" id="ap">Approve</button></div></section>
+
+<section id="collab"><h1>Collaborate</h1><div class="sub"><span class="av" style="background:#c9e82e">AK</span><span class="av" style="background:#f2a24f">MJ</span><span class="av" style="background:#d65fb4">SR</span> &nbsp;3 in the war room</div><div class="g2">
+<div class="card"><div class="board" id="bd"><div class="stk" style="left:8%;top:14%">Gate 2 needs a security look</div><div class="stk" style="left:60%;top:56%;background:#9fd8f0">Canary at 50%</div>
+<div class="cur" style="--c:#c9e82e"><span>Aki</span></div><div class="cur" style="--c:#f2a24f"><span>Mia</span></div><div class="cur" style="--c:#d65fb4"><span>Sam</span></div></div></div>
+<div class="card"><div id="chat" style="height:190px;overflow:auto"></div><div class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="cin" placeholder="Message the team or @agent"><button class="p" id="cs">Send</button></div></div></div></section>
+
+<section id="farm"><h1>Test Farm</h1><div class="sub">Real devices, running live · sample</div><div class="g" id="fm" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))"></div></section>
+
+<section id="terminal"><h1>Terminal</h1><div class="sub">Try help, task, test, deploy</div><div class="win"><div class="wb"><i></i><i></i><i></i></div><div class="tm" id="tm" onclick="ti.focus()"><div id="to"></div>$ <input id="ti" autocomplete="off" aria-label="Command"></div></div></section>
+</main><nav id="dock"></nav><div id="cnt" class="chip"></div><button id="mt" class="off" aria-label="Toggle sound">♪</button>
+<div id="post"><div class="pd" id="pd"></div><div class="pc"><button><span aria-hidden="true">♡</span> <b>567</b></button><button><span aria-hidden="true">◌</span> <b>12</b></button><button><span aria-hidden="true">⟲</span> <b>9</b></button><button><span aria-hidden="true">➤</span> <b>110</b></button><button class="sv" aria-label="Save">⚑</button></div>
+<div style="margin-top:6px"><b>aidlc.studio</b> For this project, our goal was simple: make AI delivery feel less clinical and more human<span id="ext" style="display:none"> and every minute of delay cost less. Your whole lifecycle. One screen.</span><button id="more" style="border:0;background:none;padding:0 4px;min-height:0;color:var(--mu)">… more</button></div><div class="mu" style="font-size:12px">November 7</div></div>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],W=m=>new Promise(r=>setTimeout(r,m)),R=a=>a[Math.random()*a.length|0],esc=t=>t.replace(/</g,'&lt;');
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2200)};
+const S=[['mission','Mission',90],['dashboard','Dashboard',25],['data','Data hub',20],['vitals','Vitals',110],['new','New task',140],['actions','Quick actions',280],['insights','Insights',200],['telemetry','Telemetry',330],['cr','CR list',50],['collab','Collaborate',260],['farm','Test farm',170],['terminal','Terminal',100]];
+$('#dock').innerHTML=S.map(s=>`<a href="#${s[0]}" data-id="${s[0]}">${s[1]}</a>`).join('');
+let cur='';const hooks={};
+function show(){const id=S.some(s=>s[0]==location.hash.slice(1))?location.hash.slice(1):'mission';cur=id;
+$$('section').forEach(s=>s.classList.toggle('on',s.id==id));$$('#dock a').forEach(a=>{const on=a.dataset.id==id;a.classList.toggle('on',on);if(on)a.scrollIntoView({inline:'center',block:'nearest'})});
+document.documentElement.style.setProperty('--h',S.find(s=>s[0]==id)[2]);$('#main').scrollTop=0;hooks[id]&&hooks[id]();post(id)}
+addEventListener('hashchange',show);addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;const i=S.findIndex(s=>s[0]==cur);if(e.key=='ArrowRight')location.hash=S[Math.min(S.length-1,i+1)][0];if(e.key=='ArrowLeft')location.hash=S[Math.max(0,i-1)][0]});
+setInterval(()=>$('#clk').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}),1000);
+// mission
+const AI={planner:'Drafting domain model for CR-412',coder:'Writing auth service patch, 3 files',reviewer:'Reviewing 214 lines, 1 comment',tester:'Running 1,712 tests on 8 devices',deployer:'Canary at 50%, error rate 0.1%'};
+$$('.nd').forEach(b=>b.onclick=()=>{$('#ai').innerHTML=`<div style="animation:in .4s"><b style="text-transform:capitalize">${b.dataset.a}</b> <span class="chip ok">active</span><div class="mu">${AI[b.dataset.a]}</div></div>`});
+const ag=['planner','coder','reviewer','tester','deployer'],ev=['drafted domain model','opened CR','ran 214 tests','requested approval','merged bolt','rolled out canary','fixed flaky test'];
+const feed=()=>{$('#feed').insertAdjacentHTML('afterbegin',`<div><b>${R(ag)}</b> ${R(ev)}</div>`);while($('#feed').children.length>9)$('#feed').lastChild.remove()};setInterval(feed,1700);for(let i=0;i<6;i++)feed();
+// dashboard
+function count(){$$('[data-n]').forEach(e=>{const to=+e.dataset.n,d=+e.dataset.d||0,t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/1300);e.textContent=(to*(1-Math.pow(1-p,3))).toFixed(d);if(p<1)requestAnimationFrame(f)})(t0)})}
+const BO={3:'Bolt 5 · Billing queue',5:'Bolt 6 · SSO login',7:'Bolt 8 · Auth service',10:'Bolt 9 · Rate limits',12:'Bolt 10 · Dark mode',17:'Bolt 11 · Audit log',19:'Bolt 12 · Search',24:'Bolt 13 · Release 2.0'};
+$('#cal').innerHTML=[...Array(30)].map((_,i)=>`<button class="pill${i==6?' on':''}" data-d="${i+1}">${BO[i+1]?'<i></i>':''}${i+1}</button>`).join('');
+$$('.pill').forEach(p=>p.onclick=()=>{$$('.pill').forEach(x=>x.classList.toggle('on',x===p));$('#ci').textContent=(p.dataset.d==7?'Today · ':'Nov '+p.dataset.d+' · ')+(BO[p.dataset.d]||'No bolts, a quiet day')});
+$('#ph').innerHTML=[['Inception',100],['Requirements',86],['Domain design',60],['Construction',44],['Code review',30],['Operations',12]].map(p=>`<div style="margin:9px 0"><div class="row" style="justify-content:space-between"><span>${p[0]}</span><span class="m">${p[1]}%</span></div><div class="bar"><i data-w="${p[1]}"></i></div></div>`).join('');
+hooks.dashboard=()=>{count();setTimeout(()=>$$('#ph i').forEach(i=>i.style.width=i.dataset.w+'%'),80)};
+// new task
+let kind='Feature',busy=0;
+$$('.kb').forEach(b=>b.onclick=()=>{kind=b.dataset.k;$$('.kb').forEach(x=>x.classList.toggle('on',x===b));$('#nt').dataset.k=kind});
+$$('#sv button:not(#go)').forEach(b=>b.onclick=()=>$$('#sv button:not(#go)').forEach(x=>x.classList.toggle('p',x===b)));
+const mv=(c,col)=>{c.style.animation='none';void c.offsetWidth;c.style.animation='';col.append(c)};
+$('#go').onclick=async()=>{if(busy)return;busy=1;const t=$('#ttl').value.trim()||(kind=='Bug'?'Fix login crash':'Add SSO login'),o=$('#nout');o.innerHTML='';$('#scan').classList.add('on');
+for(const l of ['Reading your description…','Classified as '+kind,'Planner drafted 3 bolts','Coder agent assigned']){await W(600);o.insertAdjacentHTML('beforeend',`<div><b>›</b> ${l}</div>`)}
+$('#scan').classList.remove('on');const c=document.createElement('div');c.className='kc';c.innerHTML=`<span class="chip ${kind=='Bug'?'r':'ok'}">${kind}</span> ${esc(t)}`;$('#q').append(c);toast('Dispatched, an agent is on it');
+await W(1600);mv(c,$('#b'));await W(2200);mv(c,$('#r'));busy=0};
+// actions
+const QA=[['Spin up bolt','＋','g1'],['Run test farm','▶','g2c'],['Roll back','↺','g3'],['Ask architect','✦','g1'],['Page on-call','☎','g2c'],['Release notes','✎','g3']];
+$('#qa').innerHTML=QA.map(a=>`<button class="tile gr ${a[2]}"><b>${a[1]}</b>${a[0]}</button>`).join('');
+const qa=$('#qa');qa.onpointermove=e=>$$('.tile').forEach(t=>{const r=t.getBoundingClientRect(),d=Math.hypot(e.clientX-r.x-r.width/2,e.clientY-r.y-r.height/2),s=1+.3*Math.exp(-d*d/(2*100*100));t.style.transform=`scale(${s})`;t.style.zIndex=Math.round(s*10)});
+qa.onpointerleave=()=>$$('.tile').forEach(t=>t.style.transform='');
+$$('.tile').forEach(b=>b.onclick=e=>{const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='rip';s.style.cssText=`width:50px;height:50px;left:${e.clientX-r.left-25}px;top:${e.clientY-r.top-25}px`;b.append(s);setTimeout(()=>s.remove(),700);toast(b.lastChild.textContent+' · started');log('$ action: '+b.lastChild.textContent)});
+// insights
+const iv=[30,44,38,62,55,78,70,92];$('#ib').innerHTML=iv.map(()=>'<i></i>').join('');
+const TW=['AI patches are accepted 78% of the time without edits.','Bugs close 2.4x faster when a stack trace is attached.','Fridays have the most rolled-back releases.'];let tk=0;
+async function type(el,t){el.textContent='';for(const ch of t){el.textContent+=ch;await W(22)}}
+hooks.insights=()=>{$$('#ib i').forEach((b,i)=>{b.style.height='0';setTimeout(()=>b.style.height=iv[i]+'%',80+i*90)});[['d1',52],['d2',31],['d3',17]].forEach(([id,v])=>{$('#'+id).setAttribute('stroke-dasharray','0 100');setTimeout(()=>$('#'+id).setAttribute('stroke-dasharray',v+' '+(100-v)),120)});type($('#tw'),TW[tk++%3])};
+// telemetry
+const cv=$('#cv'),cx=cv.getContext('2d');let A=Array(80).fill(50),B=Array(80).fill(30);
+function tel(){if(cur!='telemetry')return;const w=cv.width=cv.clientWidth*2,h=cv.height=480,step=v=>Math.max(8,Math.min(92,v+(Math.random()-.5)*16));A.push(step(A.at(-1)));A.shift();B.push(step(B.at(-1)));B.shift();
+[[A,'#c9e82e'],[B,'#f08a3c']].forEach(([d,c])=>{cx.beginPath();d.forEach((v,i)=>cx[i?'lineTo':'moveTo'](i/79*w,h-v/100*h));cx.strokeStyle=c;cx.lineWidth=4;cx.shadowColor=c;cx.shadowBlur=18;cx.stroke()});
+$('#l1').textContent='latency '+Math.round(A.at(-1)*2.4)+' ms';$('#l2').textContent='throughput '+Math.round(B.at(-1)*14)+' rps';setTimeout(()=>requestAnimationFrame(tel),100)}
+hooks.telemetry=()=>requestAnimationFrame(tel);
+// CR
+let CRS=[];const ALL=[['CR-412','Add SSO login','+ if (!claims.mfa) throw','- // TODO: SSO'],['CR-413','Fix cart rounding bug','+ Math.round(total * 100) / 100','- total.toFixed(1)'],['CR-414','Migrate billing queue','+ await queue.drain()','- queue.flush()'],['CR-415','Dark mode tokens','+ --bg: #080a0d','- --bg: #fff'],['CR-416','Rate-limit public API','+ limiter.use(60, 1000)','- // no limit']];
+function stk(){const s=$('#stk');if(!CRS.length){s.innerHTML='<div class="cc" style="align-items:center;justify-content:center;text-align:center"><div class="big">0</div>Inbox zero. Agents are working.<button class="p" id="rl">Reload CRs</button></div>';$('#rl').onclick=()=>{CRS=[...ALL];stk()};return}
+s.innerHTML=CRS.slice(0,3).map((c,i)=>`<div class="cc" data-i="${i}" style="z-index:${3-i};transform:translateY(${i*16}px) scale(${1-i*.05});opacity:${1-i*.25}"><div><span class="chip ok">review</span> <b class="m">${c[0]}</b><h2 style="font-weight:300;margin:10px 0">${c[1]}</h2></div><div class="df"><div class="ad">${c[2]}</div><div class="rm">${c[3]}</div></div><div class="mu">by coder agent · tests passed</div></div>`).join('');
+const t=s.firstChild;let x0=null;t.onpointerdown=e=>{x0=e.clientX;t.setPointerCapture(e.pointerId);t.style.transition='none'};t.onpointermove=e=>{if(x0===null)return;const dx=e.clientX-x0;t.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;t.style.background=dx>0?'rgba(111,220,122,.3)':'rgba(255,122,107,.3)'};
+t.onpointerup=e=>{if(x0===null)return;const dx=e.clientX-x0;x0=null;t.style.transition='';if(Math.abs(dx)>100)fling(dx>0);else{t.style.transform='';t.style.background=''}}}
+async function fling(ok){const t=$('#stk .cc[data-i="0"]');if(!t)return;t.style.transition='';t.style.transform=`translateX(${ok?600:-600}px) rotate(${ok?30:-30}deg)`;t.style.opacity=0;toast(ok?CRS[0][0]+' approved, deploying':CRS[0][0]+' sent back');await W(320);CRS.shift();stk()}
+$('#ap').onclick=()=>fling(1);$('#rj').onclick=()=>fling(0);hooks.cr=()=>{if(!CRS.length)CRS=[...ALL];stk()};
+// collab
+const say=(t,me,w)=>{const c=$('#chat');c.insertAdjacentHTML('beforeend',`<div class="mg ${me?'me':''}">${w?'<b>'+w+'</b> ':''}${t}</div>`);c.scrollTop=1e9};
+say('Canary looks healthy.',0,'Mia');say('Approving CR-412 after the farm run.',0,'Sam');
+$('#cs').onclick=()=>{const v=$('#cin').value.trim();if(!v)return;say(esc(v),1);$('#cin').value='';$('#chat').insertAdjacentHTML('beforeend','<div class="mg dots" id="ty"><span></span><span></span><span></span></div>');setTimeout(()=>{$('#ty').remove();say('On it. I will open a bolt and ping you at the gate.',0,'Agent')},1400)};
+$('#cin').onkeydown=e=>{if(e.key=='Enter')$('#cs').click()};
+setInterval(()=>$$('.cur').forEach(c=>{c.style.left=(5+Math.random()*75)+'%';c.style.top=(5+Math.random()*70)+'%'}),1700);
+// farm
+const DV=['Pixel 9','iPhone 16','Galaxy S25','iPad Pro','Pixel Fold','iPhone SE','Galaxy Tab','Moto G'];
+$('#fm').innerHTML=DV.map((d,i)=>`<div class="ph" data-i="${i}"><div class="scr"></div><b style="display:block;margin-top:8px">${d}</b><div class="bar"><i id="p${i}" style="transition:width .5s"></i></div><span class="chip m" id="s${i}">running</span></div>`).join('');
+const pg=DV.map(()=>Math.random()*70);
+setInterval(()=>DV.forEach((d,i)=>{pg[i]+=Math.random()*7;const s=$('#s'+i);if(pg[i]>=100){pg[i]=0;const bad=Math.random()<.2;s.textContent=bad?'1 failed':'passed';s.className='chip '+(bad?'r':'ok')}else{s.textContent=Math.round(pg[i]*2.14)+' / 214';s.className='chip m'}$('#p'+i).style.width=pg[i]+'%'}),700);
+$$('.ph').forEach(p=>p.onclick=()=>{toast(DV[p.dataset.i]+' · streaming logs');log('$ farm: attach '+DV[p.dataset.i])});
+// terminal
+const out=$('#to'),ti=$('#ti');const log=t=>{out.insertAdjacentHTML('beforeend',`<div>${t}</div>`);$('#tm').scrollTop=1e9};
+(async()=>{for(const l of ['aidlc 1.0 · connected to mission control','4 agents · 8 devices online · type help']){await W(500);log(l)}})();
+let hist=[],hi=0;
+ti.onkeydown=async e=>{if(e.key=='ArrowUp'){ti.value=hist[--hi<0?(hi=0):hi]||'';return}if(e.key!='Enter')return;const c=ti.value.trim();ti.value='';hist.push(c);hi=hist.length;log('$ '+esc(c));
+const C={help:['task &lt;title&gt; · test · deploy · status · clear'],status:['3 phases active · 2 gates pending · p95 118ms'],test:['running 8 devices…','1,712 passed · 0 failed'],deploy:['building…','canary 5%…','canary 50%…','released ✓']};
+if(c=='clear'){out.innerHTML='';return}if(c.startsWith('task')){location.hash='new';$('#ttl').value=c.slice(5);return}
+for(const l of C[c]||['command not found: '+esc(c)]){await W(450);log(l)}};
+// ---- screenshot features: calendar icons, data hub, vitals, showcase chrome
+Object.assign(BO,{16:'Bolt 10b · Design sync',18:'Bolt 11b · Asset pipeline',28:'Bolt 14 · Hotfix window'});
+const IC={3:'J',5:'S',7:'F',10:'G',12:'F',16:'D',17:'A',18:'A',19:'J',24:'L',28:'L'},CL={J:'#2f6df0',S:'#8a3fd0',F:'#f2552c',G:'#444',D:'#ea4c89',A:'#e1251b',L:'#0a66c2'};
+function cal(){const c=[];for(let i=26;i<=31;i++)c.push(['f',i]);for(let i=1;i<=30;i++)c.push(['',i]);for(let i=1;i<=6;i++)c.push(['f',i]);
+$('#cal').innerHTML=c.map(([f,d])=>`<button class="pill ${f}${!f&&d==7?' on':''}" ${f?'disabled':`data-d="${d}"`}>${!f&&IC[d]?`<i style="background:${CL[IC[d]]}">${IC[d]}</i>`:''}${d}</button>`).join('');
+$$('.pill:not(.f)').forEach(p=>p.onclick=()=>{$$('.pill').forEach(x=>x.classList.toggle('on',x===p));const d=p.dataset.d;$('#rpn').textContent=BO[d]||'Nothing scheduled';$('#ci').textContent=(d==7?'Today · ':'Nov '+d+' · ')+(BO[d]||'a quiet day')})}
+cal();$$('#rm button').forEach(b=>b.onclick=()=>$$('#rm button').forEach(x=>x.classList.toggle('p',x===b)));$('#sched').onclick=()=>toast('Release scheduled · '+$('#rpn').textContent);
+// data hub
+const DL=[['All Data','×'],['Delivery markers','25 pts'],['Pipeline health','72/100'],['Security','91/100'],['Test immunity','64/100'],['Team balance','Balanced'],['Build metabolism','78/100'],['Dependencies','43 pkgs'],['Runtime','Normal']];
+$('#dl').innerHTML=DL.map((d,i)=>`<div class="fl${i?'':' on'}">${d[0]}<u>${d[1]}</u></div>`).join('');
+$$('.fl').forEach(f=>f.onclick=()=>{$$('.fl').forEach(x=>x.classList.toggle('on',x===f));toast(f.firstChild.textContent+' · filtered')});
+$$('#dt button').forEach((b,i)=>b.onclick=()=>{$$('#dt button').forEach(x=>x.classList.toggle('p',x===b));$('#dm').style.display=i?'none':'';$('#rc').style.display=i?'block':'none'});
+$('#tlx').insertAdjacentHTML('afterbegin',[...Array(46)].map((_,i)=>`<i style="left:${4+i*2.05}%;bottom:${10+Math.abs(Math.sin(i*.7))*34}px;background:${R(['#d65fb4','#f08a3c','#c9e82e','#8fa8d8'])}"></i>`).join(''));
+$('#tlx').onclick=e=>{const r=$('#tlx').getBoundingClientRect();$('#fp').style.left=Math.max(2,Math.min(55,(e.clientX-r.left)/r.width*100-15))+'%'};
+$('#rg').oninput=e=>$('#rv').textContent=e.target.value+'-'+(+e.target.value+3);
+$('#try').onclick=()=>{toast('Pro trial started');$('#pdays').textContent='Trial on'};
+$('#up').onclick=()=>{$('#ec').textContent=+$('#ec').textContent+1;toast('Spec uploaded')};
+$('#ct').onclick=()=>{$('#cts').textContent='Connected · GitHub, Jira';toast('Tracker connected')};
+$$('.sa').forEach(b=>b.onclick=()=>toast('Showing everything'));
+let cart=0;const AGS=[['Refactor Agent','24.30','Best Seller','#d8f5a0,#4f9a3a'],['Docs Agent','19.90','Best Seller','#e0efff,#5a8be0'],['Perf Agent','45.00','Fair Price','#ffe0b0,#e0782a']];
+$('#ag').innerHTML=AGS.map(a=>`<div class="ti bm"><span class="chip ${a[2]=='Fair Price'?'':'ok'}" style="align-self:flex-start">${a[2]}</span><div class="orb" style="background:radial-gradient(circle at 35% 30%,${a[3]})"></div><div class="row" style="justify-content:space-between"><div><div>${a[0]}</div><b class="m">$${a[1]}</b></div><button class="add">Add</button></div></div>`).join('');
+$$('.add').forEach(b=>b.onclick=()=>{$('#cn').textContent=++cart;b.textContent='Added'});
+hooks.data=()=>count();
+// vitals
+let ts=300;setInterval(()=>{if(cur!='vitals')return;ts=ts?ts-1:300;$('#tm5').textContent='⏱ '+Math.floor(ts/60)+':'+String(ts%60).padStart(2,'0')},1000);
+$$('#ic button').forEach(b=>b.onclick=()=>$$('#ic button').forEach(x=>x.classList.toggle('on',x===b)));$$('.arw').forEach(b=>b.onclick=()=>toast('Opening details'));
+// showcase chrome (post UI)
+const go=d=>{const i=S.findIndex(s=>s[0]==cur);location.hash=S[Math.max(0,Math.min(S.length-1,i+d))][0]};
+$('#bk').onclick=()=>go(-1);
+$('#pd').innerHTML=S.map((s,i)=>`<button aria-label="Slide ${i+1}" onclick="location.hash='${s[0]}'"></button>`).join('');
+function post(id){const i=S.findIndex(s=>s[0]==id);$('#cnt').textContent=(i+1)+'/'+S.length;$$('#pd button').forEach((d,j)=>d.classList.toggle('on',j==i))}
+$('#sc').onclick=()=>{const on=document.body.classList.toggle('show');$('#sc').textContent=on?'Exit showcase':'Showcase';$('.logo').lastChild.nodeValue=on?'Posts · aidlc.studio':'AI-DLC Mission Control'};
+const DVS=['off','ipad','phone'];let dvi=0;$('#dv').onclick=()=>{dvi=(dvi+1)%3;document.body.dataset.dev=DVS[dvi];$('#dv').textContent='Device: '+DVS[dvi]};
+$('#fw').onclick=()=>{const on=$('#fw').classList.toggle('on');$('#fw').textContent=on?'Following':'Follow'};
+$$('.pc button').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('on'),n=b.querySelector('b');n.textContent=+n.textContent+(on?1:-1)});
+$('#more').onclick=()=>{const o=$('#ext').style.display=='none';$('#ext').style.display=o?'inline':'none';$('#more').textContent=o?' less':'… more'};
+$('#mt').onclick=()=>{const o=$('#mt').classList.toggle('off');toast(o?'Sound off':'Sound on')};
+let sx=0;$('#main').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});$('#main').addEventListener('touchend',e=>{if(!document.body.classList.contains('show')||e.target.closest('.cc,.cal,input'))return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>70)go(dx<0?1:-1)},{passive:true});
+post(cur||'mission');
+show();
+</script></body></html>
