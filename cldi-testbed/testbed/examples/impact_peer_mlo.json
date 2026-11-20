@@ -1,0 +1,6 @@
+{
+  "_doc": "Example impact file (as CLDI or a reviewer would produce): touched files/functions and/or explicit components.",
+  "files": ["drivers/net/wireless/ath/ath12k/peer.c", "drivers/net/wireless/ath/ath12k/mac.c"],
+  "functions": ["ath12k_peer_delete", "ath12k_mac_op_change_vif_links", "ath12k_wmi_send_peer_delete_cmd"],
+  "components": []
+}

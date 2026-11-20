@@ -1,0 +1,82 @@
+{
+  "id": "reset_no_suspend",
+  "title": "Suspend-less reset: wifi reload and driver unload/reload",
+  "proves": "Full teardown/re-probe paths (no system suspend) release everything: memory returns, FW reloads cleanly, no WMI/HTT timeouts on re-init.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ]
+  },
+  "components": [
+    "driver.recovery",
+    "driver.init",
+    "driver.core",
+    "driver.ce",
+    "fw",
+    "wmi",
+    "htt",
+    "nss"
+  ],
+  "loops": 5,
+  "cooldown_s": 20,
+  "expected": {
+    "peers_after": 0
+  },
+  "signals": [
+    "dmesg",
+    "meminfo",
+    "slab(per loop)",
+    "kmemleak",
+    "ramdump"
+  ],
+  "gates": [
+    "crash",
+    "timeouts",
+    "slab_slope",
+    "kmemleak"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      }
+    ],
+    "loop": [
+      {
+        "id": "wifi_reload",
+        "on": "dut",
+        "action": "wifi_reload",
+        "cmd": "wifi down && sleep 2 && wifi up",
+        "timeout_s": 120,
+        "wait_s": 5,
+        "every": 2,
+        "offset": 0
+      },
+      {
+        "id": "mod_reload",
+        "on": "dut",
+        "action": "module_reload",
+        "cmd": "wifi down; rmmod {wifi_modules}; sleep 2; modprobe {wifi_modules}; wifi up",
+        "placeholder": "QSDK module names / load order (and NSS dependencies) vary; verify before enabling",
+        "timeout_s": 180,
+        "wait_s": 5,
+        "every": 2,
+        "offset": 1
+      },
+      {
+        "id": "ap_ok",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 120
+      }
+    ],
+    "teardown": []
+  }
+}

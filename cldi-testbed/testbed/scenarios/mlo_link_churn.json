@@ -1,0 +1,127 @@
+{
+  "id": "mlo_link_churn",
+  "title": "MLO: multi-link association, repeated link removal/addition under traffic",
+  "proves": "ML peer + per-link peer bookkeeping, link add/remove over WMI (MLO link set / reconfig), HTT peer map for link peers, FW MLO manager stability.",
+  "applies_to": {
+    "drivers": [
+      "ath12k"
+    ],
+    "requires_caps": [
+      "mlo"
+    ]
+  },
+  "components": [
+    "hostapd",
+    "wpa_supplicant",
+    "nl80211",
+    "cfg80211",
+    "mac80211",
+    "driver.mlo",
+    "driver.peer",
+    "driver.vdev",
+    "wmi",
+    "htt",
+    "fw"
+  ],
+  "loops": 20,
+  "cooldown_s": 10,
+  "expected": {
+    "peers_after": 0
+  },
+  "signals": [
+    "dmesg",
+    "ramdump",
+    "peers(per loop)",
+    "throughput",
+    "slab(per loop)"
+  ],
+  "gates": [
+    "crash",
+    "timeouts",
+    "peer_leak",
+    "throughput",
+    "slab_slope"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "iperf_srv",
+        "on": "dut",
+        "action": "setup",
+        "cmd": "pidof iperf3 >/dev/null || iperf3 -s -D",
+        "ignore_rc": true
+      },
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {mld_ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "sup_up",
+        "on": "peer",
+        "action": "setup",
+        "cmd": "pidof wpa_supplicant >/dev/null || wpa_supplicant -B -D nl80211 -i {mld_sta_if} -c {wpa_conf_mlo}",
+        "ignore_rc": true
+      },
+      {
+        "id": "mlo_assoc",
+        "on": "peer",
+        "action": "assoc",
+        "cmd": "wpa_cli -i {mld_sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {mld_sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40
+      },
+      {
+        "id": "links",
+        "on": "peer",
+        "action": "check",
+        "cmd": "iw dev {mld_sta_if} info",
+        "ignore_rc": true
+      }
+    ],
+    "loop": [
+      {
+        "id": "link_del",
+        "on": "dut",
+        "action": "mlo_link_del",
+        "cmd": "hostapd_cli -i {mld_ap_if} link_remove {mlo_link_b}",
+        "placeholder": "ML reconfiguration link removal command differs across hostapd/QSDK versions; set command_overrides.mlo_link_churn.link_del",
+        "wait_s": 3
+      },
+      {
+        "id": "tput_1link",
+        "on": "peer",
+        "action": "traffic",
+        "cmd": "iperf3 -c {dut_ip} -t 5 -R -J",
+        "capture": "iperf3",
+        "timeout_s": 40
+      },
+      {
+        "id": "link_add",
+        "on": "dut",
+        "action": "mlo_link_add",
+        "cmd": "hostapd_cli -i {mld_ap_if} link_add {mlo_link_b}",
+        "placeholder": "link re-add command is QSDK/hostapd-version specific (may be 'disable/enable' of the affiliated BSS); set command_overrides.mlo_link_churn.link_add",
+        "wait_s": 5
+      },
+      {
+        "id": "tput_2link",
+        "on": "peer",
+        "action": "traffic",
+        "cmd": "iperf3 -c {dut_ip} -t 5 -R -J",
+        "capture": "iperf3",
+        "timeout_s": 40
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {mld_sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}

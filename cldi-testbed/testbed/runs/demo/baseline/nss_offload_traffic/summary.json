@@ -1,0 +1,446 @@
+{
+  "scenario": "nss_offload_traffic",
+  "title": "NSS offload: TCP/UDP through the NSS data path",
+  "build": "baseline",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 5,
+  "loops_done": 5,
+  "duration_s": 0.2,
+  "steps": {
+    "total": 21,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 0,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": []
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 412221,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 412004,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          1539,
+          1523,
+          1535,
+          1536,
+          1531
+        ],
+        "skbuff_fclone_cache": [
+          246,
+          254,
+          255,
+          259,
+          263
+        ],
+        "kmalloc-256": [
+          9222,
+          9230,
+          9214,
+          9215,
+          9219
+        ],
+        "kmalloc-512": [
+          3591,
+          3585,
+          3584,
+          3580,
+          3603
+        ],
+        "kmalloc-1k": [
+          2295,
+          2302,
+          2308,
+          2312,
+          2295
+        ],
+        "kmalloc-2k": [
+          1026,
+          1022,
+          1008,
+          1039,
+          1022
+        ],
+        "kmalloc-4k": [
+          379,
+          383,
+          390,
+          383,
+          373
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": -0.3,
+          "r2": 0.006,
+          "n": 5
+        },
+        "skbuff_fclone_cache": {
+          "slope": 3.9,
+          "r2": 0.944,
+          "n": 5
+        },
+        "kmalloc-256": {
+          "slope": -2.1,
+          "r2": 0.266,
+          "n": 5
+        },
+        "kmalloc-512": {
+          "slope": 1.9,
+          "r2": 0.112,
+          "n": 5
+        },
+        "kmalloc-1k": {
+          "slope": 1.0,
+          "r2": 0.043,
+          "n": 5
+        },
+        "kmalloc-2k": {
+          "slope": 0.9,
+          "r2": 0.016,
+          "n": 5
+        },
+        "kmalloc-4k": {
+          "slope": -1.2,
+          "r2": 0.093,
+          "n": 5
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 1531,
+        "skbuff_fclone_cache": 265,
+        "kmalloc-256": 9217,
+        "kmalloc-512": 3586,
+        "kmalloc-1k": 2302,
+        "kmalloc-2k": 1026,
+        "kmalloc-4k": 384
+      },
+      "post": {
+        "skbuff_head_cache": 1535,
+        "skbuff_fclone_cache": 257,
+        "kmalloc-256": 9223,
+        "kmalloc-512": 3578,
+        "kmalloc-1k": 2289,
+        "kmalloc-2k": 1026,
+        "kmalloc-4k": 382
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "per_loop": [
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 8189,
+      "post_total": 8192,
+      "per_loop": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 20350024,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 915,
+        "wifili.rx_exceptions": 45,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": true,
+      "samples": [
+        {
+          "mbps": 1743.17,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 0
+        },
+        {
+          "mbps": 1586.42,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_ul",
+          "loop": 0
+        },
+        {
+          "mbps": 1462.24,
+          "lost_percent": 0.304,
+          "protocol": "udp",
+          "step": "udp_dl",
+          "loop": 0
+        },
+        {
+          "mbps": 1749.67,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 1
+        },
+        {
+          "mbps": 1547.76,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_ul",
+          "loop": 1
+        },
+        {
+          "mbps": 1491.3,
+          "lost_percent": 0.273,
+          "protocol": "udp",
+          "step": "udp_dl",
+          "loop": 1
+        },
+        {
+          "mbps": 1719.57,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 2
+        },
+        {
+          "mbps": 1580.56,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_ul",
+          "loop": 2
+        },
+        {
+          "mbps": 1484.54,
+          "lost_percent": 0.289,
+          "protocol": "udp",
+          "step": "udp_dl",
+          "loop": 2
+        },
+        {
+          "mbps": 1727.46,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 3
+        },
+        {
+          "mbps": 1598.17,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_ul",
+          "loop": 3
+        },
+        {
+          "mbps": 1496.78,
+          "lost_percent": 0.284,
+          "protocol": "udp",
+          "step": "udp_dl",
+          "loop": 3
+        },
+        {
+          "mbps": 1723.68,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 4
+        },
+        {
+          "mbps": 1550.44,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_ul",
+          "loop": 4
+        },
+        {
+          "mbps": 1479.45,
+          "lost_percent": 0.292,
+          "protocol": "udp",
+          "step": "udp_dl",
+          "loop": 4
+        }
+      ]
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 21.0
+    },
+    "recovery": {
+      "passed": 0,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 0,
+          "expected_fatal": 0,
+          "expected_fw_crash": 0,
+          "new_ramdumps": 0
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "timeouts",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "0 WMI/HTT timeout line(s) (no baseline to diff)"
+      },
+      {
+        "gate": "throughput",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": {
+          "tcp_dl": 1727.5,
+          "tcp_ul": 1580.6,
+          "udp_dl": 1484.5
+        },
+        "detail": "no baseline to compare"
+      },
+      {
+        "gate": "udp_loss",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": 0.289,
+        "detail": "no baseline UDP samples"
+      },
+      {
+        "gate": "cpu",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": 21.0,
+        "detail": "cpu utilisation not available for both builds"
+      },
+      {
+        "gate": "nss",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": {
+          "wifili.tx_drops": 915,
+          "wifili.rx_exceptions": 45,
+          "drv.tx_fail": 0
+        },
+        "detail": "no baseline NSS stats"
+      }
+    ]
+  }
+}

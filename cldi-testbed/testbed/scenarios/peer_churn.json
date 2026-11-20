@@ -1,0 +1,110 @@
+{
+  "id": "peer_churn",
+  "title": "Peer lifecycle churn: N associate/disassociate cycles, STA- and AP-initiated teardown",
+  "proves": "Peer create/delete is balanced across mac80211, driver peer table and FW (WMI peer_create/peer_delete + HTT peer map/unmap). Catches refcount leaks that print nothing.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ]
+  },
+  "components": [
+    "hostapd",
+    "wpa_supplicant",
+    "mac80211",
+    "driver.peer",
+    "driver.vdev",
+    "wmi",
+    "htt",
+    "fw"
+  ],
+  "loops": 50,
+  "cooldown_s": 10,
+  "expected": {
+    "peers_after": 0
+  },
+  "signals": [
+    "dmesg",
+    "peers(per loop)",
+    "slab(per loop)",
+    "kmemleak",
+    "meminfo"
+  ],
+  "gates": [
+    "crash",
+    "timeouts",
+    "peer_leak",
+    "slab_slope",
+    "kmemleak"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "sup_up",
+        "on": "peer",
+        "action": "setup",
+        "cmd": "pidof wpa_supplicant >/dev/null || wpa_supplicant -B -D nl80211 -i {sta_if} -c {wpa_conf_slo}",
+        "ignore_rc": true
+      }
+    ],
+    "loop": [
+      {
+        "id": "assoc",
+        "on": "peer",
+        "action": "assoc",
+        "cmd": "wpa_cli -i {sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40
+      },
+      {
+        "id": "ping",
+        "on": "peer",
+        "action": "check",
+        "cmd": "ping -c 3 -W 1 {dut_ip}"
+      },
+      {
+        "id": "disassoc_sta",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "every": 2,
+        "offset": 0,
+        "wait_s": 1
+      },
+      {
+        "id": "deauth_ap",
+        "on": "dut",
+        "action": "deauth",
+        "cmd": "hostapd_cli -i {ap_if} deauthenticate {sta_mac}",
+        "every": 2,
+        "offset": 1,
+        "wait_s": 1
+      },
+      {
+        "id": "quiesce",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "every": 2,
+        "offset": 1,
+        "ignore_rc": true
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}

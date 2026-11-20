@@ -1,0 +1,31 @@
+{
+  "_doc": "Signatures (regex, case-insensitive) and gate thresholds. Override with --thresholds my.json (deep-merged).",
+  "signatures": {
+    "fatal": ["Kernel panic", "Unable to handle kernel", "Internal error: Oops", "\\bBUG:", "skb_over_panic", "skb_under_panic",
+              "soft lockup", "hard LOCKUP", "self-detected stall", "rcu: INFO: .*stall"],
+    "fw_crash": ["firmware crashed", "FW_ASSERT", "Target Assert", "fatal error received", "MHI_CB_EE_RDDM",
+                 "q6v5.*(fatal|watchdog)", "wcss.*(fatal|watchdog)"],
+    "timeout": ["wmi command \\d+ timeout", "WMI timeout", "wmi .*timed? ?out", "HTT timeout", "htt .*timed? ?out",
+                "failed to .*: -110\\b"],
+    "peer": ["peer .* not found", "failed to delete peer", "peer .* already (exists|present)", "failed to (create|add) peer"],
+    "warning": ["WARNING: CPU:", "WARNING: at ", "kmemleak: \\d+ new suspected"]
+  },
+  "crash_event_window_s": 10,
+  "gates": {
+    "crash": {"_doc": "any unexpected fatal or fw_crash event = FAIL; scenarios that inject crashes declare expected counts"},
+    "timeouts": {"fail_on_new": true, "_doc": "candidate WMI/HTT timeout lines > baseline = FAIL; equal and >0 = WARN (pre-existing)"},
+    "peer_leak": {"expected_remaining": 0, "_doc": "after teardown+cooldown, station dump and driver peer list must both equal expected"},
+    "slab_slope": {
+      "caches": ["skbuff_head_cache", "skbuff_fclone_cache", "kmalloc-256", "kmalloc-512", "kmalloc-1k", "kmalloc-2k", "kmalloc-4k"],
+      "warn_per_loop": 32, "fail_per_loop": 128, "min_r2": 0.7, "min_points": 5,
+      "_doc": "least-squares slope of active_objs vs loop index; candidate slope minus baseline slope is gated when a baseline exists"
+    },
+    "recycler": {"tolerance_abs": 64, "tolerance_pct": 2.0, "_doc": "post-cooldown pool total must return to pre-scenario total"},
+    "throughput": {"warn_drop_pct": 5.0, "fail_drop_pct": 10.0, "_doc": "median iperf3 Mbps, candidate vs baseline"},
+    "udp_loss": {"warn_increase_pts": 1.0, "fail_increase_pts": 5.0},
+    "kmemleak": {"wlan_regex": "ath1[012]k|mac80211|cfg80211|nss|skb|qca|wifi", "_doc": "new wlan-related unreferenced objects vs baseline = FAIL"},
+    "cpu": {"warn_increase_pts": 15.0},
+    "nss": {"drop_key_regex": "drop|fail|exception|err", "warn_increase_pct": 20.0, "min_abs": 100},
+    "recovery": {"_doc": "scenarios that inject a crash must observe it and pass every recovery check"}
+  }
+}

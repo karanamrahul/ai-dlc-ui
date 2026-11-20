@@ -1,0 +1,540 @@
+{
+  "scenario": "vdev_updown_churn",
+  "title": "vdev up/down: BSS disable/enable and netdev down/up with a client",
+  "build": "candidate",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 20,
+  "loops_done": 20,
+  "duration_s": 0.2,
+  "steps": {
+    "total": 108,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 0,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": []
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 410741,
+        "MemAvailable_kB": 596870,
+        "Slab_kB": 62130,
+        "SUnreclaim_kB": 39130
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 410883,
+        "MemAvailable_kB": 596870,
+        "Slab_kB": 62130,
+        "SUnreclaim_kB": 39130
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          6041,
+          6020,
+          6028,
+          6034,
+          6031,
+          6041,
+          6040,
+          6043,
+          6039,
+          6035,
+          6039,
+          6040,
+          6039,
+          6034,
+          6037,
+          6031,
+          6035,
+          6037,
+          6027,
+          6025
+        ],
+        "skbuff_fclone_cache": [
+          256,
+          252,
+          265,
+          253,
+          254,
+          247,
+          255,
+          253,
+          250,
+          253,
+          256,
+          263,
+          238,
+          256,
+          235,
+          247,
+          238,
+          255,
+          250,
+          245
+        ],
+        "kmalloc-256": [
+          9240,
+          9233,
+          9220,
+          9223,
+          9234,
+          9231,
+          9243,
+          9213,
+          9224,
+          9221,
+          9215,
+          9226,
+          9235,
+          9252,
+          9224,
+          9220,
+          9243,
+          9234,
+          9232,
+          9238
+        ],
+        "kmalloc-512": [
+          3589,
+          3582,
+          3590,
+          3582,
+          3581,
+          3580,
+          3585,
+          3583,
+          3586,
+          3594,
+          3582,
+          3588,
+          3587,
+          3579,
+          3575,
+          3565,
+          3580,
+          3576,
+          3584,
+          3585
+        ],
+        "kmalloc-1k": [
+          2292,
+          2299,
+          2317,
+          2310,
+          2299,
+          2307,
+          2307,
+          2304,
+          2299,
+          2315,
+          2300,
+          2308,
+          2313,
+          2300,
+          2287,
+          2317,
+          2317,
+          2301,
+          2320,
+          2316
+        ],
+        "kmalloc-2k": [
+          1030,
+          1021,
+          1026,
+          1010,
+          1014,
+          1020,
+          1022,
+          1023,
+          1012,
+          1018,
+          1017,
+          1018,
+          1023,
+          1035,
+          1031,
+          1013,
+          1020,
+          1010,
+          1026,
+          1006
+        ],
+        "kmalloc-4k": [
+          388,
+          381,
+          369,
+          389,
+          386,
+          401,
+          376,
+          386,
+          376,
+          379,
+          380,
+          388,
+          376,
+          380,
+          386,
+          381,
+          376,
+          378,
+          391,
+          381
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": -0.096,
+          "r2": 0.009,
+          "n": 20
+        },
+        "skbuff_fclone_cache": {
+          "slope": -0.601,
+          "r2": 0.212,
+          "n": 20
+        },
+        "kmalloc-256": {
+          "slope": 0.279,
+          "r2": 0.026,
+          "n": 20
+        },
+        "kmalloc-512": {
+          "slope": -0.396,
+          "r2": 0.141,
+          "n": 20
+        },
+        "kmalloc-1k": {
+          "slope": 0.519,
+          "r2": 0.111,
+          "n": 20
+        },
+        "kmalloc-2k": {
+          "slope": -0.214,
+          "r2": 0.028,
+          "n": 20
+        },
+        "kmalloc-4k": {
+          "slope": -0.129,
+          "r2": 0.012,
+          "n": 20
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 6038,
+        "skbuff_fclone_cache": 253,
+        "kmalloc-256": 9212,
+        "kmalloc-512": 3593,
+        "kmalloc-1k": 2307,
+        "kmalloc-2k": 1026,
+        "kmalloc-4k": 383
+      },
+      "post": {
+        "skbuff_head_cache": 6039,
+        "skbuff_fclone_cache": 258,
+        "kmalloc-256": 9223,
+        "kmalloc-512": 3577,
+        "kmalloc-1k": 2312,
+        "kmalloc-2k": 1012,
+        "kmalloc-4k": 397
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "per_loop": [
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 3755,
+      "post_total": 3760,
+      "per_loop": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 0,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 0,
+        "wifili.rx_exceptions": 0,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": false,
+      "samples": []
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 42.0
+    },
+    "recovery": {
+      "passed": 0,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 0,
+          "expected_fatal": 0,
+          "expected_fw_crash": 0,
+          "new_ramdumps": 0
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "timeouts",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "0 WMI/HTT timeout line(s) (no baseline to diff)"
+      },
+      {
+        "gate": "peer_leak",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "loops": 20,
+          "station_dump": "0->0 (+0)",
+          "driver": "0->0 (+0)"
+        },
+        "detail": "no peers left behind"
+      },
+      {
+        "gate": "slab_slope",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "skbuff_head_cache": {
+            "slope": -0.096,
+            "r2": 0.009,
+            "n": 20
+          },
+          "skbuff_fclone_cache": {
+            "slope": -0.601,
+            "r2": 0.212,
+            "n": 20
+          },
+          "kmalloc-256": {
+            "slope": 0.279,
+            "r2": 0.026,
+            "n": 20
+          },
+          "kmalloc-512": {
+            "slope": -0.396,
+            "r2": 0.141,
+            "n": 20
+          },
+          "kmalloc-1k": {
+            "slope": 0.519,
+            "r2": 0.111,
+            "n": 20
+          },
+          "kmalloc-2k": {
+            "slope": -0.214,
+            "r2": 0.028,
+            "n": 20
+          },
+          "kmalloc-4k": {
+            "slope": -0.129,
+            "r2": 0.012,
+            "n": 20
+          }
+        },
+        "detail": "no monotonic growth above threshold"
+      }
+    ]
+  }
+}

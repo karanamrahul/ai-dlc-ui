@@ -1,0 +1,79 @@
+{
+  "_doc": "Lab topology. Values marked VERIFY are assumptions about Rahul's Alder boards / QSDK 12.5 image, not checked on hardware.",
+  "dut": {
+    "name": "alder-1",
+    "role": "ap",
+    "transport": "ssh",
+    "ssh": {"host": "192.168.1.1", "user": "root", "port": 22, "opts": ["-o", "StrictHostKeyChecking=accept-new"]},
+    "console": {"port": "/dev/ttyUSB0", "baud": 115200},
+    "driver": "ath12k",
+    "chip": "QCN9274 (VERIFY)",
+    "platform": "IPQ95xx 'Alder' reference board (VERIFY)",
+    "qsdk": true,
+    "capabilities": ["mlo", "dfs", "nss", "recycler"],
+    "radios": [
+      {"phy": "phy0", "band": "5g", "ifname": "phy0-ap0"},
+      {"phy": "phy1", "band": "6g", "ifname": "phy1-ap0"},
+      {"phy": "phy2", "band": "2g", "ifname": "phy2-ap0"}
+    ],
+    "vars": {
+      "ap_if": "phy0-ap0",
+      "ap_if_b": "phy1-ap0",
+      "mld_ap_if": "ap-mld0",
+      "dut_phy": "phy0",
+      "dut_ip": "192.168.1.1",
+      "ssid": "tb-slo",
+      "ssid_mlo": "tb-mlo",
+      "bssid_a": "00:03:7f:00:00:01",
+      "bssid_b": "00:03:7f:00:00:02",
+      "mlo_link_b": "1",
+      "debugfs_dev": "/sys/kernel/debug/ath12k/pci-0000:01:00.0",
+      "dfs_channel": "52",
+      "nondfs_channel": "36",
+      "wifi_modules": "ath12k_pci ath12k",
+      "peer_count_ifaces": ["phy0-ap0", "phy1-ap0"]
+    },
+    "paths": {
+      "_doc": "All optional. Missing paths are reported 'not available', never as a failure.",
+      "peer_debugfs_globs": ["/sys/kernel/debug/ath12k/*/mac*/peers", "/sys/kernel/debug/ath12k/*/peers"],
+      "ramdump_globs": ["/sys/class/devcoredump/devcd*", "/tmp/*ramdump*", "/tmp/qca_wlan_*dump*"],
+      "pstore_globs": ["/sys/fs/pstore/dmesg-*", "/sys/fs/pstore/console-*"],
+      "kmemleak": "/sys/kernel/debug/kmemleak",
+      "recycler": {"dir": "/proc/net/skb_recycler", "pool_key_regex": "pool"},
+      "nss": {"dir": "/sys/kernel/debug/qca-nss-drv/stats", "files": ["n2h", "wifili", "drv", "eth_rx"]}
+    },
+    "identity_cmds": {
+      "kernel": "uname -r",
+      "image": "cat /etc/openwrt_version 2>/dev/null || cat /etc/openwrt_release",
+      "wlan_fw": "dmesg | grep -iE 'fw_version|firmware ver' | tail -n 2"
+    }
+  },
+  "peer": {
+    "name": "alder-2",
+    "role": "sta",
+    "transport": "ssh",
+    "ssh": {"host": "192.168.1.2", "user": "root", "port": 22, "opts": ["-o", "StrictHostKeyChecking=accept-new"]},
+    "console": {"port": "/dev/ttyUSB1", "baud": 115200},
+    "driver": "ath12k",
+    "qsdk": true,
+    "capabilities": ["mlo"],
+    "vars": {
+      "sta_if": "wlan0",
+      "mld_sta_if": "wlan0",
+      "peer_ip": "192.168.1.2",
+      "sta_mac": "00:03:7f:00:10:01",
+      "wpa_conf_slo": "/etc/tb/wpa_slo.conf",
+      "wpa_conf_mlo": "/etc/tb/wpa_mlo.conf",
+      "iperf_secs": "10"
+    }
+  },
+  "builds": {
+    "_doc": "Optional: identity strings the runner checks so a 'candidate' run cannot silently happen on the baseline image. Flashing is out of scope (do it with your sysupgrade/TFTP flow first).",
+    "baseline": {"expect_image_contains": null},
+    "candidate": {"expect_image_contains": null}
+  },
+  "command_overrides": {
+    "_doc": "scenario_id.step_id -> replacement command. A placeholder step runs on real boards only if overridden here or --allow-placeholders is given.",
+    "mlo_link_churn.link_del": null
+  }
+}

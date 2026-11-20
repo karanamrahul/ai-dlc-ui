@@ -46,11 +46,25 @@ pip install -r requirements.txt
 FIXTURE_MODE=1 python demo/run_demo.py
 ```
 
-Open `web/index.html` for the visual scenario map, or view a report:
+Open **`web/guide.html`** for the Patch QA storyboard (Setup → Gates → Scenarios → Drivers → Real vs sim → Start), wired to a **SIMULATED** CLDI compare report. Also: `web/index.html` (scenario map), `web/rings.html` (onion rings).
 
 ```bash
 python -m impact.report CR-mlo-tlv-len-fix
 ```
+
+## CLDI testbed (baseline vs candidate)
+
+The `cldi-testbed/` package is the two-board runner (stdlib Python). Sim pipeline:
+
+```bash
+cd cldi-testbed
+python3 -m testbed list
+python3 -m testbed run --backend sim --build baseline  --allow-destructive --out runs/demo/baseline
+python3 -m testbed run --backend sim --build candidate --allow-destructive --out runs/demo/candidate
+python3 -m testbed compare runs/demo/baseline runs/demo/candidate --out runs/demo
+```
+
+A checked-in sim compare lives at `runs/sim-demo/` and `web/data/sim_compare.json` (overall **FAIL** with seeded MLO crash, peer leak, recycler drain, NSS warn). **Nothing has run on the Alder boards yet** — fill every `VERIFY` in `boards.json` first.
 
 ## Live boards
 
@@ -69,7 +83,9 @@ runner/           SSH/fixture driver + scenario runner
 impact/           Q1/Q2 report generator
 fixtures/         coverage maps + sample patches (replace with measured data)
 demo/             end-to-end demo
-web/              interactive visual
+cldi-testbed/     two-board baseline↔candidate runner (sim + SSH)
+runs/sim-demo/    checked-in simulated compare report
+web/              guide.html · index.html · rings.html
 ```
 
 ## Next 2 weeks (locked)

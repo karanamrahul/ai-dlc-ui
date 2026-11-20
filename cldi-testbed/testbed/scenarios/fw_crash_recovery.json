@@ -1,0 +1,128 @@
+{
+  "id": "fw_crash_recovery",
+  "title": "WLAN FW crash injection + recovery (SSR)",
+  "proves": "Driver detects FW assert, collects dump, restarts FW, re-creates vdevs/peers, and the BSS carries traffic again.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ]
+  },
+  "components": [
+    "driver.recovery",
+    "driver.init",
+    "fw",
+    "wmi",
+    "htt",
+    "driver.peer",
+    "driver.vdev",
+    "mac80211"
+  ],
+  "loops": 3,
+  "cooldown_s": 10,
+  "expected": {
+    "fw_crash_events_per_loop": 1,
+    "peers_after": 0
+  },
+  "signals": [
+    "dmesg",
+    "ramdump",
+    "recovery checks",
+    "peers",
+    "throughput"
+  ],
+  "gates": [
+    "crash",
+    "recovery",
+    "timeouts",
+    "peer_leak",
+    "throughput"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "iperf_srv",
+        "on": "dut",
+        "action": "setup",
+        "cmd": "pidof iperf3 >/dev/null || iperf3 -s -D",
+        "ignore_rc": true
+      },
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "sup_up",
+        "on": "peer",
+        "action": "setup",
+        "cmd": "pidof wpa_supplicant >/dev/null || wpa_supplicant -B -D nl80211 -i {sta_if} -c {wpa_conf_slo}",
+        "ignore_rc": true
+      },
+      {
+        "id": "assoc",
+        "on": "peer",
+        "action": "assoc",
+        "cmd": "wpa_cli -i {sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40
+      }
+    ],
+    "loop": [
+      {
+        "id": "inject",
+        "on": "dut",
+        "action": "fw_crash_inject",
+        "cmd_by_driver": {
+          "ath10k": "echo hard > /sys/kernel/debug/ieee80211/{dut_phy}/ath10k/simulate_fw_crash",
+          "ath11k": "echo assert > /sys/kernel/debug/ath11k/*/simulate_fw_crash",
+          "ath12k": "echo assert > {debugfs_dev}/simulate_fw_crash"
+        },
+        "placeholder": "debugfs path differs per kernel/QSDK; ath12k simulate_fw_crash availability not verified",
+        "wait_s": 30
+      },
+      {
+        "id": "rec_ap",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90,
+        "recovery_check": true
+      },
+      {
+        "id": "rec_assoc",
+        "on": "peer",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40,
+        "recovery_check": true
+      },
+      {
+        "id": "rec_ping",
+        "on": "peer",
+        "action": "check",
+        "cmd": "ping -c 3 -W 1 {dut_ip}",
+        "recovery_check": true
+      },
+      {
+        "id": "tcp_dl",
+        "on": "peer",
+        "action": "traffic",
+        "cmd": "iperf3 -c {dut_ip} -t {iperf_secs} -R -J",
+        "capture": "iperf3",
+        "timeout_s": 60
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}

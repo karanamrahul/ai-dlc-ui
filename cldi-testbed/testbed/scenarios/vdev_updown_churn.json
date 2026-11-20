@@ -1,0 +1,111 @@
+{
+  "id": "vdev_updown_churn",
+  "title": "vdev up/down: BSS disable/enable and netdev down/up with a client",
+  "proves": "vdev create/start/stop/delete pairs are balanced in driver and FW; peers on a going-down vdev are flushed.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ]
+  },
+  "components": [
+    "hostapd",
+    "nl80211",
+    "cfg80211",
+    "mac80211",
+    "driver.vdev",
+    "driver.peer",
+    "wmi",
+    "fw"
+  ],
+  "loops": 20,
+  "cooldown_s": 10,
+  "expected": {
+    "peers_after": 0
+  },
+  "signals": [
+    "dmesg",
+    "peers",
+    "slab(per loop)",
+    "timeouts"
+  ],
+  "gates": [
+    "crash",
+    "timeouts",
+    "peer_leak",
+    "slab_slope"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "sup_up",
+        "on": "peer",
+        "action": "setup",
+        "cmd": "pidof wpa_supplicant >/dev/null || wpa_supplicant -B -D nl80211 -i {sta_if} -c {wpa_conf_slo}",
+        "ignore_rc": true
+      }
+    ],
+    "loop": [
+      {
+        "id": "assoc",
+        "on": "peer",
+        "action": "assoc",
+        "cmd": "wpa_cli -i {sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40
+      },
+      {
+        "id": "bss_disable",
+        "on": "dut",
+        "action": "vdev_down",
+        "cmd": "hostapd_cli -i {ap_if} disable",
+        "wait_s": 2
+      },
+      {
+        "id": "bss_enable",
+        "on": "dut",
+        "action": "vdev_up",
+        "cmd": "hostapd_cli -i {ap_if} enable && (for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "netdev_cycle",
+        "on": "dut",
+        "action": "vdev_cycle",
+        "cmd": "ip link set {ap_if} down; sleep 1; ip link set {ap_if} up",
+        "every": 4,
+        "wait_s": 3
+      },
+      {
+        "id": "ap_ok",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}

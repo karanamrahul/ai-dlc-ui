@@ -1,0 +1,102 @@
+{
+  "id": "rekey_gtk",
+  "title": "GTK/PTK rekey under UDP traffic",
+  "proves": "Group and pairwise rekey install keys via mac80211 set_key -> WMI install_key without traffic loss or stale-key/fragment-cache issues.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ]
+  },
+  "components": [
+    "hostapd",
+    "mac80211",
+    "driver.crypto",
+    "wmi",
+    "fw",
+    "driver.dp_rx"
+  ],
+  "loops": 10,
+  "cooldown_s": 5,
+  "expected": {
+    "peers_after": 0
+  },
+  "signals": [
+    "udp loss",
+    "dmesg",
+    "timeouts"
+  ],
+  "gates": [
+    "crash",
+    "timeouts",
+    "udp_loss",
+    "throughput"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "iperf_srv",
+        "on": "dut",
+        "action": "setup",
+        "cmd": "pidof iperf3 >/dev/null || iperf3 -s -D",
+        "ignore_rc": true
+      },
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      },
+      {
+        "id": "sup_up",
+        "on": "peer",
+        "action": "setup",
+        "cmd": "pidof wpa_supplicant >/dev/null || wpa_supplicant -B -D nl80211 -i {sta_if} -c {wpa_conf_slo}",
+        "ignore_rc": true
+      },
+      {
+        "id": "assoc",
+        "on": "peer",
+        "action": "assoc",
+        "cmd": "wpa_cli -i {sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 40
+      }
+    ],
+    "loop": [
+      {
+        "id": "udp_bg",
+        "on": "peer",
+        "action": "traffic_bg",
+        "cmd": "rm -f /tmp/tb_rekey.json; (iperf3 -c {dut_ip} -u -b 200M -t 6 -R -J --logfile /tmp/tb_rekey.json >/dev/null 2>&1 &)",
+        "wait_s": 2
+      },
+      {
+        "id": "rekey",
+        "on": "dut",
+        "action": "rekey",
+        "cmd": "hostapd_cli -i {ap_if} rekey_gtk && hostapd_cli -i {ap_if} rekey_ptk {sta_mac}",
+        "placeholder": "REKEY_GTK/REKEY_PTK ctrl_iface commands need a hostapd build with them (some are CONFIG_TESTING_OPTIONS)",
+        "wait_s": 1
+      },
+      {
+        "id": "udp_result",
+        "on": "peer",
+        "action": "traffic_collect",
+        "cmd": "sleep 5; cat /tmp/tb_rekey.json",
+        "capture": "iperf3",
+        "timeout_s": 30
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}

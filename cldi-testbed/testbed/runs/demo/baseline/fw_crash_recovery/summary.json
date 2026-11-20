@@ -1,0 +1,342 @@
+{
+  "scenario": "fw_crash_recovery",
+  "title": "WLAN FW crash injection + recovery (SSR)",
+  "build": "baseline",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 3,
+  "loops_done": 3,
+  "duration_s": 0.0,
+  "steps": {
+    "total": 20,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 12,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 6,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 3,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [
+          "[  424.540000] ath12k_pci 0000:01:00.0: firmware crashed: MHI_CB_EE_RDDM (SIMULATED)",
+          "[  424.590000] ath12k_pci 0000:01:00.0: FW_ASSERT: assert injected via debugfs simulate_fw_crash (SIMULATED)",
+          "[  473.850000] ath12k_pci 0000:01:00.0: firmware crashed: MHI_CB_EE_RDDM (SIMULATED)",
+          "[  473.900000] ath12k_pci 0000:01:00.0: FW_ASSERT: assert injected via debugfs simulate_fw_crash (SIMULATED)",
+          "[  523.160000] ath12k_pci 0000:01:00.0: firmware crashed: MHI_CB_EE_RDDM (SIMULATED)",
+          "[  523.210000] ath12k_pci 0000:01:00.0: FW_ASSERT: assert injected via debugfs simulate_fw_crash (SIMULATED)"
+        ],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3"
+      ]
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 412125,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 411930,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          1536,
+          1525,
+          1549
+        ],
+        "skbuff_fclone_cache": [
+          250,
+          248,
+          256
+        ],
+        "kmalloc-256": [
+          9212,
+          9208,
+          9207
+        ],
+        "kmalloc-512": [
+          3581,
+          3574,
+          3578
+        ],
+        "kmalloc-1k": [
+          2296,
+          2304,
+          2300
+        ],
+        "kmalloc-2k": [
+          1021,
+          1028,
+          1020
+        ],
+        "kmalloc-4k": [
+          385,
+          392,
+          373
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": 6.5,
+          "r2": 0.293,
+          "n": 3
+        },
+        "skbuff_fclone_cache": {
+          "slope": 3.0,
+          "r2": 0.519,
+          "n": 3
+        },
+        "kmalloc-256": {
+          "slope": -2.5,
+          "r2": 0.893,
+          "n": 3
+        },
+        "kmalloc-512": {
+          "slope": -1.5,
+          "r2": 0.182,
+          "n": 3
+        },
+        "kmalloc-1k": {
+          "slope": 2.0,
+          "r2": 0.25,
+          "n": 3
+        },
+        "kmalloc-2k": {
+          "slope": -0.5,
+          "r2": 0.013,
+          "n": 3
+        },
+        "kmalloc-4k": {
+          "slope": -6.0,
+          "r2": 0.39,
+          "n": 3
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 1532,
+        "skbuff_fclone_cache": 252,
+        "kmalloc-256": 9214,
+        "kmalloc-512": 3575,
+        "kmalloc-1k": 2302,
+        "kmalloc-2k": 1023,
+        "kmalloc-4k": 383
+      },
+      "post": {
+        "skbuff_head_cache": 1536,
+        "skbuff_fclone_cache": 242,
+        "kmalloc-256": 9218,
+        "kmalloc-512": 3577,
+        "kmalloc-1k": 2311,
+        "kmalloc-2k": 1032,
+        "kmalloc-4k": 378
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "per_loop": [
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 8191,
+      "post_total": 8189,
+      "per_loop": [
+        null,
+        null,
+        null
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 0,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 0,
+        "wifili.rx_exceptions": 0,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": true,
+      "samples": [
+        {
+          "mbps": 1697.27,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 0
+        },
+        {
+          "mbps": 1736.31,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 1
+        },
+        {
+          "mbps": 1717.31,
+          "lost_percent": null,
+          "protocol": "tcp",
+          "step": "tcp_dl",
+          "loop": 2
+        }
+      ]
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 42.0
+    },
+    "recovery": {
+      "passed": 9,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 3,
+          "expected_fatal": 0,
+          "expected_fw_crash": 3,
+          "new_ramdumps": 3
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "recovery",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "injected": 3,
+          "crash_events_seen": 3,
+          "checks_passed": 9,
+          "checks_failed": 0
+        },
+        "detail": "3 crash(es) observed, all 9 recovery checks passed"
+      },
+      {
+        "gate": "timeouts",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "0 WMI/HTT timeout line(s) (no baseline to diff)"
+      },
+      {
+        "gate": "peer_leak",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "loops": 3,
+          "station_dump": "0->0 (+0)",
+          "driver": "0->0 (+0)"
+        },
+        "detail": "no peers left behind"
+      },
+      {
+        "gate": "throughput",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": {
+          "tcp_dl": 1717.3
+        },
+        "detail": "no baseline to compare"
+      }
+    ]
+  }
+}

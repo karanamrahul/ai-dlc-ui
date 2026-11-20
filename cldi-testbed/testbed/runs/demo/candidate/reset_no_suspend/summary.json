@@ -1,0 +1,356 @@
+{
+  "scenario": "reset_no_suspend",
+  "title": "Suspend-less reset: wifi reload and driver unload/reload",
+  "build": "candidate",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 5,
+  "loops_done": 5,
+  "duration_s": 0.0,
+  "steps": {
+    "total": 11,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 5,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": []
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 411987,
+        "MemAvailable_kB": 597995,
+        "Slab_kB": 61005,
+        "SUnreclaim_kB": 38005
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 412014,
+        "MemAvailable_kB": 597995,
+        "Slab_kB": 61005,
+        "SUnreclaim_kB": 38005
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          1533,
+          1538,
+          1548,
+          1538,
+          1524
+        ],
+        "skbuff_fclone_cache": [
+          260,
+          258,
+          275,
+          270,
+          263
+        ],
+        "kmalloc-256": [
+          9237,
+          9227,
+          9222,
+          9219,
+          9235
+        ],
+        "kmalloc-512": [
+          3589,
+          3586,
+          3583,
+          3587,
+          3574
+        ],
+        "kmalloc-1k": [
+          2308,
+          2315,
+          2308,
+          2307,
+          2303
+        ],
+        "kmalloc-2k": [
+          1038,
+          1008,
+          1034,
+          1018,
+          1018
+        ],
+        "kmalloc-4k": [
+          377,
+          369,
+          373,
+          388,
+          389
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": -1.8,
+          "r2": 0.106,
+          "n": 5
+        },
+        "skbuff_fclone_cache": {
+          "slope": 1.8,
+          "r2": 0.16,
+          "n": 5
+        },
+        "kmalloc-256": {
+          "slope": -1.2,
+          "r2": 0.058,
+          "n": 5
+        },
+        "kmalloc-512": {
+          "slope": -2.9,
+          "r2": 0.606,
+          "n": 5
+        },
+        "kmalloc-1k": {
+          "slope": -1.8,
+          "r2": 0.433,
+          "n": 5
+        },
+        "kmalloc-2k": {
+          "slope": -3.0,
+          "r2": 0.145,
+          "n": 5
+        },
+        "kmalloc-4k": {
+          "slope": 4.3,
+          "r2": 0.576,
+          "n": 5
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 1534,
+        "skbuff_fclone_cache": 250,
+        "kmalloc-256": 9244,
+        "kmalloc-512": 3591,
+        "kmalloc-1k": 2317,
+        "kmalloc-2k": 1027,
+        "kmalloc-4k": 376
+      },
+      "post": {
+        "skbuff_head_cache": 1528,
+        "skbuff_fclone_cache": 257,
+        "kmalloc-256": 9239,
+        "kmalloc-512": 3585,
+        "kmalloc-1k": 2311,
+        "kmalloc-2k": 1032,
+        "kmalloc-4k": 385
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 5
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "per_loop": [
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        },
+        {
+          "station_dump": 0,
+          "driver": 0
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 8189,
+      "post_total": 8195,
+      "per_loop": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 0,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 0,
+        "wifili.rx_exceptions": 0,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": false,
+      "samples": []
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 42.0
+    },
+    "recovery": {
+      "passed": 0,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 0,
+          "expected_fatal": 0,
+          "expected_fw_crash": 0,
+          "new_ramdumps": 0
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "timeouts",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "0 WMI/HTT timeout line(s) (no baseline to diff)"
+      },
+      {
+        "gate": "slab_slope",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "skbuff_head_cache": {
+            "slope": -1.8,
+            "r2": 0.106,
+            "n": 5
+          },
+          "skbuff_fclone_cache": {
+            "slope": 1.8,
+            "r2": 0.16,
+            "n": 5
+          },
+          "kmalloc-256": {
+            "slope": -1.2,
+            "r2": 0.058,
+            "n": 5
+          },
+          "kmalloc-512": {
+            "slope": -2.9,
+            "r2": 0.606,
+            "n": 5
+          },
+          "kmalloc-1k": {
+            "slope": -1.8,
+            "r2": 0.433,
+            "n": 5
+          },
+          "kmalloc-2k": {
+            "slope": -3.0,
+            "r2": 0.145,
+            "n": 5
+          },
+          "kmalloc-4k": {
+            "slope": 4.3,
+            "r2": 0.576,
+            "n": 5
+          }
+        },
+        "detail": "no monotonic growth above threshold"
+      },
+      {
+        "gate": "kmemleak",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "no new wlan-related kmemleak reports"
+      }
+    ]
+  }
+}
