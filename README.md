@@ -46,7 +46,7 @@ pip install -r requirements.txt
 FIXTURE_MODE=1 python demo/run_demo.py
 ```
 
-Open **`web/guide.html`** for the Patch QA storyboard (Setup → Gates → Scenarios → Drivers → Real vs sim → Start), wired to a **SIMULATED** CLDI compare report. Also: `web/index.html` (scenario map), `web/rings.html` (onion rings).
+Open **`web/guide.html`** for the Patch QA storyboard (Setup → Gates → Scenarios → Drivers → Real vs sim → Start), wired to a **SIMULATED** CLDI compare report. Also: `web/index.html` (scenario map), `web/rings.html` (SRNG / CE / interrupt architecture).
 
 ```bash
 python -m impact.report CR-mlo-tlv-len-fix
@@ -85,7 +85,7 @@ fixtures/         coverage maps + sample patches (replace with measured data)
 demo/             end-to-end demo
 cldi-testbed/     two-board baseline↔candidate runner (sim + SSH)
 runs/sim-demo/    checked-in simulated compare report
-web/              guide.html · index.html · rings.html
+web/              guide.html · index.html · rings.html (queue/IRQ SRNG diagram)
 ```
 
 ## Next 2 weeks (locked)

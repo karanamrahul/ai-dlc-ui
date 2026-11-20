@@ -3,325 +3,467 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WLAN Stack — Ring Story</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Queue · Interrupt · SRNG — ath12k DP/CE architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0c0e0d;--ink:#f2f0e8;--muted:#9aa396;--line:rgba(255,255,255,.10);
-  --host:#6db3f2;--fw:#f0c05a;--nss:#6ecf9a;--nssfw:#e8896a;--apps:#c4b5fd;
-  --ctrl:#7dd3fc;--data:#fbbf24;--panel:rgba(255,255,255,.04);
+  --bg:#0e1116;
+  --panel:#161b22;
+  --ink:#e8edf4;
+  --muted:#8b95a5;
+  --line:#2a3340;
+  --host:#6eb6ff;
+  --hal:#9ad1ff;
+  --tcl:#5fd4a4;
+  --wbm:#f0b429;
+  --reo:#e8896a;
+  --ce:#c4b5fd;
+  --fw:#f5d78e;
+  --irq:#ff7b72;
+  --nss:#7dcea0;
+  --hit:rgba(110,182,255,.14);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif}
-body{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
-header{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;flex-wrap:wrap;z-index:2}
-header .brand{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;letter-spacing:-.02em}
-header .sub{color:var(--muted);font-size:13px;max-width:42ch}
-.modes{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-.modes button,.scens button{
-  border:1px solid var(--line);background:transparent;color:var(--muted);
-  font:500 12px/1 "DM Sans",sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer;
+html,body{min-height:100%;background:var(--bg);color:var(--ink);font:400 14px/1.45 "IBM Plex Sans",system-ui,sans-serif}
+body{
+  background:
+    radial-gradient(900px 420px at 8% -5%, #1a2740 0%, transparent 55%),
+    radial-gradient(700px 380px at 100% 0%, #1e2a22 0%, transparent 50%),
+    var(--bg);
 }
-.modes button.on{background:var(--ink);color:#0c0e0d;border-color:transparent}
-.scens button.on{border-color:var(--data);color:var(--ink);background:rgba(251,191,36,.12)}
-.wrap{display:grid;grid-template-columns:1.15fr .85fr;min-height:0}
-@media(max-width:980px){.wrap{grid-template-columns:1fr;overflow:auto}body{overflow:auto}}
-.stage{position:relative;display:grid;place-items:center;min-height:0;padding:12px}
-svg.ring{width:min(92vw,620px);height:min(92vw,620px);overflow:visible}
-.caption{position:absolute;left:20px;bottom:16px;font-size:12px;color:var(--muted);max-width:34ch;line-height:1.4}
-.side{border-left:1px solid var(--line);padding:20px 22px;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
-.side h2{font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:500;letter-spacing:-.02em;line-height:1.15;margin-bottom:8px}
-.side .lede{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:18px}
-.card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--panel);margin-bottom:12px}
-.card h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px}
-.card p,.card li{font-size:13.5px;line-height:1.45}
+header{
+  padding:18px 24px 14px;border-bottom:1px solid var(--line);
+  display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;
+}
+.brand{font:800 22px/1 Syne,sans-serif;letter-spacing:-.03em}
+.sub{color:var(--muted);font-size:13px;max-width:54ch}
+.modes{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.modes button,.pills button{
+  appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);
+  font:500 12px/1 "IBM Plex Sans",sans-serif;padding:8px 12px;border-radius:8px;cursor:pointer;
+}
+.modes button.on{background:var(--ink);color:#0e1116;border-color:transparent}
+.pills button.on{border-color:var(--host);color:var(--ink);background:var(--hit)}
+.wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.75fr);min-height:calc(100vh - 78px)}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}}
+.stage{padding:18px 16px 24px;overflow:auto}
+svg.arch{width:100%;max-width:980px;height:auto;display:block;margin:0 auto}
+.side{border-left:1px solid var(--line);padding:18px 18px 28px;overflow:auto;background:rgba(0,0,0,.18)}
+.side h2{font:700 20px/1.15 Syne,sans-serif;letter-spacing:-.02em;margin-bottom:6px}
+.side .lede{color:var(--muted);font-size:13px;margin-bottom:14px}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);margin-bottom:10px}
+.card h3{font:600 11px/1 "IBM Plex Sans",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.card p,.card li{font-size:13px;line-height:1.45}
 .card ul{padding-left:16px}
-.card li{margin:4px 0}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
-.chip{font:500 11px/1 "DM Mono",monospace;padding:6px 9px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
-.chip.hot{color:var(--ink)}
-.chip.host{border-color:color-mix(in srgb,var(--host) 55%,transparent);color:var(--host)}
-.chip.fw{border-color:color-mix(in srgb,var(--fw) 55%,transparent);color:var(--fw)}
-.chip.nss{border-color:color-mix(in srgb,var(--nss) 55%,transparent);color:var(--nss)}
-.chip.nssfw{border-color:color-mix(in srgb,var(--nssfw) 55%,transparent);color:var(--nssfw)}
-.chip.apps{border-color:color-mix(in srgb,var(--apps) 55%,transparent);color:var(--apps)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-.bigidea{border-left:3px solid var(--data);padding:4px 0 4px 12px;margin:14px 0;font-size:14px;line-height:1.45}
-.scens{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.simple{font-size:15px;line-height:1.5;margin-bottom:12px}
-.tech{font-family:"DM Mono",monospace;font-size:11.5px;color:var(--muted);line-height:1.55;border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
-.pkt{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}
+.card li{margin:3px 0}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font:500 11px/1 "IBM Plex Mono",monospace;padding:5px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.chip.hot{color:var(--ink);border-color:currentColor}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 4px 12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.caption{max-width:980px;margin:10px auto 0;color:var(--muted);font-size:12px}
+.ring-node{cursor:pointer}
+.ring-node:hover .slot{stroke-opacity:1;filter:brightness(1.15)}
+.ring-node.on .slot{stroke-width:2.4;stroke:var(--ink);filter:drop-shadow(0 0 6px rgba(255,255,255,.25))}
+.flow-anim{animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.irq-pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+a.nav{color:var(--host);text-decoration:none;font-size:12px;font-weight:500}
 </style>
 </head>
 <body>
 <header>
   <div>
-    <div class="brand">The Wi‑Fi onion</div>
-    <div class="sub">One picture for someone new — still the real Host / FW / NSS stack</div>
+    <div class="brand">Queue · Interrupt · SRNG</div>
+    <div class="sub">ath12k-class DP/CE rings: host producer/consumer, HAL doorbell, MSI → NAPI. Not an onion — the actual ring hardware path.</div>
   </div>
   <div class="modes" id="modes">
-    <button data-m="story" class="on">Tell me a story</button>
-    <button data-m="control">Control path</button>
-    <button data-m="data">Data path</button>
-    <button data-m="scenario">Run a scenario</button>
+    <button data-m="overview" class="on">Architecture</button>
+    <button data-m="tx">TX data path</button>
+    <button data-m="rx">RX data path</button>
+    <button data-m="ctrl">Control (CE/WMI)</button>
+    <button data-m="irq">Interrupt → NAPI</button>
   </div>
 </header>
 <div class="wrap">
   <section class="stage">
-    <svg class="ring" id="svg" viewBox="0 0 640 640" aria-label="Concentric rings of the WLAN stack"></svg>
-    <div class="caption" id="caption">Each ring is a real software layer. Packets and commands travel between rings.</div>
+    <div class="legend">
+      <span><i style="background:var(--tcl)"></i>TCL TX</span>
+      <span><i style="background:var(--wbm)"></i>WBM release/compl</span>
+      <span><i style="background:var(--reo)"></i>REO RX</span>
+      <span><i style="background:var(--ce)"></i>CE / WMI·HTT</span>
+      <span><i style="background:var(--irq)"></i>MSI / IRQ</span>
+      <span><i style="background:var(--fw)"></i>WLAN FW</span>
+    </div>
+    <svg class="arch" id="svg" viewBox="0 0 980 640" role="img" aria-label="SRNG queue and interrupt architecture"></svg>
+    <p class="caption" id="caption">Click a ring. Head/tail pointers live in host DRAM; FW/HW advances the other end and raises MSI when the threshold fires.</p>
   </section>
-  <aside class="side" id="side"></aside>
+  <aside class="side">
+    <div class="pills" id="pills"></div>
+    <div id="panel"></div>
+    <p style="margin-top:12px"><a class="nav" href="guide.html">← Patch QA guide</a> · <a class="nav" href="index.html">Scenario map</a></p>
+  </aside>
 </div>
 <script>
-/* ---- geometry helpers ---- */
-const CX=320, CY=320;
-const RINGS = [
-  {id:'apps',  name:'Apps / mac80211',  r:292, color:'var(--apps)',  plain:'Your laptop brain: hostapd, apps, Linux Wi‑Fi stack', tech:'nl80211 · cfg80211 · mac80211'},
-  {id:'host',  name:'WLAN Host',        r:236, color:'var(--host)',  plain:'The Linux driver that talks to the chip (ath10k / ath11k / ath12k)', tech:'ath1x driver · builds WMI · owns peer/vdev · hands SKBs to NSS'},
-  {id:'fw',    name:'WLAN Firmware',    r:178, color:'var(--fw)',    plain:'Software living on the Wi‑Fi radio chip', tech:'WMI handlers · peer AST · air scheduling · HTT'},
-  {id:'nss',   name:'NSS Host',         r:118, color:'var(--nss)',   plain:'Fast‑path helper in the kernel (moves packets quickly)', tech:'SKB ownership · recycle pool · NSS msgs to NSS FW'},
-  {id:'nssfw', name:'NSS Firmware',     r:58,  color:'var(--nssfw)', plain:'Tiny engine that blasts packets at wire speed', tech:'DMA · link queues · crypto offload · MLO sched'},
-];
-
-const SCENARIOS = {
-  mlo:{
-    title:'MLO — add & remove a link',
-    plain:'Wi‑Fi 7 can use two radios at once (two “links”). This story adds a second link, sends traffic, then removes it — while everything is still running.',
-    why:'Most 12.5 bugs hide here: control deletes a link while data still sends on it.',
-    layers:['apps','host','fw','nss','nssfw'],
-    control:['Ask Host to add MLO link','Host → WLAN FW via WMI_MLO_LINK_SET','FW updates peer‑link map','Host tells NSS about the new link','NSS FW opens a queue for that link'],
-    data:['Packets leave the app','Host gives SKB to NSS','NSS FW picks link A or B','Radio sends it','Completion comes back; SKB recycled'],
-    collide:'Remove the link before the queue is empty → stuck packets, recycle underflow, sometimes a crash.',
+const RINGS = {
+  tcl: {
+    id:"tcl", name:"TCL data ring", short:"TCL", color:"var(--tcl)",
+    kind:"SRC (host → HW)",
+    hp:"Host SW writes descriptors, rings doorbell",
+    tp:"HW/FW consumes, advances TP",
+    irq:"Usually no IRQ on fill — TX completion via WBM",
+    files:["dp_tx.c","hal_tx.c","hal_srng.c","dp_srng.c"],
+    symbols:["ath12k_dp_tx","hal_srng_access_begin","hal_srng_src_get_next","hal_srng_access_end","TCL_DATA_CMD"],
+    proves:"TX enqueue under skb pressure; ownership until WBM release",
+    scenarios:["skb_ownership_traffic","nss_offload_traffic","skb_recycler_stress"],
   },
-  peer:{
-    title:'PEER — many phones join & leave',
-    plain:'Lots of devices connect and disconnect quickly. Three notebooks must stay in sync: Host, WLAN FW, and NSS each keep a peer list.',
-    why:'If one list deletes a peer and another still uses the ID, the AP can panic (APSS).',
-    layers:['apps','host','fw','nss'],
-    control:['Create peer (WMI)','FW allocates peer','Host mirrors to NSS','Delete peer in careful order'],
-    data:['Optional light traffic per peer','TX complete must not arrive after delete'],
-    collide:'Delete peer while TX complete still in flight → use‑after‑free.',
+  wbm: {
+    id:"wbm", name:"WBM release / completion", short:"WBM", color:"var(--wbm)",
+    kind:"DST (HW → host)",
+    hp:"Host SW reaps completions",
+    tp:"HW posts TX-done / buffer-release entries",
+    irq:"MSI when DST threshold crossed → NAPI poll reaps",
+    files:["dp_tx.c","dp_rx.c","hal_rx.c","hal_srng.c"],
+    symbols:["ath12k_dp_tx_completion_handler","hal_srng_dst_get_next","WBM_RELEASE_RING"],
+    proves:"TX complete ordering; double-free / use-after-WBM bugs",
+    scenarios:["skb_ownership_traffic","peer_churn","apss_crash_recovery"],
   },
-  skb:{
-    title:'SKB — flood of packets',
-    plain:'Blast traffic. This is mostly the data highway: who owns each packet buffer (SKB), and does the recycle pool stay healthy?',
-    why:'Memory bugs show up under pressure, not in quiet labs.',
-    layers:['apps','host','fw','nss','nssfw'],
-    control:['Bring‑up only (AP already on)'],
-    data:['iperf flood','Host → NSS SKB handoff','NSS FW DMA + TX','Completions recycle buffers'],
-    collide:'Link remove / recovery that frees pools mid‑flight couples SKB bugs to MLO and RECOVERY.',
+  reo: {
+    id:"reo", name:"REO destination (RX)", short:"REO", color:"var(--reo)",
+    kind:"DST (HW → host)",
+    hp:"Host SW reaps MSDUs / indicates to stack or NSS",
+    tp:"REO HW reorders + posts RX descriptors",
+    irq:"MSI → NAPI → ath12k_dp_rx / REO replenish",
+    files:["dp_rx.c","hal_rx.c","dp_rx_desc.c"],
+    symbols:["ath12k_dp_rx_process","hal_srng_dst_get_next","REO_DST","RXDMA_BUF"],
+    proves:"RX path under traffic; desc replenish; reorder stalls",
+    scenarios:["skb_ownership_traffic","nss_offload_traffic","roam"],
   },
-  apss:{
-    title:'APSS — delete while busy',
-    plain:'Purposely delete a peer/AP interface while traffic is still flying. We want the crash now, in the lab — not in the field.',
-    why:'Forces the control/data race that causes host panics.',
-    layers:['apps','host','fw','nss'],
-    control:['Delete peer / vdev via WMI','NSS peer_delete'],
-    data:['Heavy TX during delete','Late TX‑complete callback'],
-    collide:'NSS callback after the peer is gone = classic APSS crash.',
+  rxdma: {
+    id:"rxdma", name:"RXDMA buffer rings", short:"RXDMA", color:"#7dd3fc",
+    kind:"SRC (host posts empty bufs)",
+    hp:"Host posts RX buffers (refill)",
+    tp:"RXDMA HW pulls buffers for FW/MAC",
+    irq:"Low-buffer / refill path; coupled to REO",
+    files:["dp_rx.c","hal_rx.c"],
+    symbols:["ath12k_dp_rx_bufs_replenish","RXDMA_BUF","RXDMA_MONITOR"],
+    proves:"Buffer starvation, refill races after recovery",
+    scenarios:["fw_crash_recovery","skb_ownership_traffic","reset_no_suspend"],
   },
-  slo:{
-    title:'SLO — connect / disconnect loop',
-    plain:'One radio, one link. Connect and disconnect many times. Boring — and that is the point. If this leaks, everything harder will leak too.',
-    why:'Baseline leak detector before you trust MLO.',
-    layers:['apps','host','fw','nss'],
-    control:['VDEV start + peer create','Then reverse delete'],
-    data:['Short traffic between loops'],
-    collide:'Leaked peer IDs get reused later under PEER storm.',
+  ce: {
+    id:"ce", name:"Copy Engine (CE) rings", short:"CE", color:"var(--ce)",
+    kind:"SRC+DST per CE pipe",
+    hp:"Host CE src: WMI/HTT H2T commands",
+    tp:"CE dst: WMI events / HTT T2H",
+    irq:"Per-CE MSI or shared → ce_per_engine_service / tasklet/NAPI",
+    files:["ce.c","hif.c","wmi.c","htt.c"],
+    symbols:["ath12k_ce_tx","ath12k_ce_per_engine_service","wmi_cmd_send","htt_t2h_msg_handler"],
+    proves:"Control-plane timeouts, peer create/delete, MLO link cmds",
+    scenarios:["mlo_link_churn","peer_churn","slo_assoc_basic","rekey_gtk","fw_crash_recovery"],
   },
-  recovery:{
-    title:'RECOVERY — chip reboots',
-    plain:'WLAN FW asserts (crashes). Host must reset everything, wipe peers, and come back clean. Data in the air must be aborted once — not freed twice.',
-    why:'Double‑free and ghost peers after reset.',
-    layers:['apps','host','fw','nss'],
-    control:['Detect assert','Host reset + NSS reset','FW boots, WMI ready','Rebuild vdev/peer'],
-    data:['Drain or free in‑flight SKBs once','No TX to dead rings'],
-    collide:'Host and NSS both free the same SKB during flush.',
+  irq: {
+    id:"irq", name:"MSI / IRQ → NAPI", short:"IRQ", color:"var(--irq)",
+    kind:"Interrupt path (not a data ring)",
+    hp:"—",
+    tp:"—",
+    irq:"PCIe MSI from ring threshold / CE → ath12k_pci_msi → napi_schedule",
+    files:["pci.c","dp.c","ce.c"],
+    symbols:["ath12k_pci_ext_irq","ath12k_dp_service_srng","napi_schedule","napi_complete_done"],
+    proves:"IRQ storms, NAPI budget, missed MSI after recovery",
+    scenarios:["fw_crash_recovery","reset_no_suspend","nss_offload_traffic"],
   },
 };
 
-let mode='story', scen='mlo';
-
-function polar(a,r){return [CX+Math.cos(a)*r, CY+Math.sin(a)*r]}
-function arcPath(r,a0,a1){
-  const [x0,y0]=polar(a0,r),[x1,y1]=polar(a1,r);
-  const large = (a1-a0)%(Math.PI*2) > Math.PI ? 1 : 0;
-  return `M${x0},${y0} A${r},${r} 0 ${large} 1 ${x1},${y1}`;
-}
-
-function draw(){
-  const svg=document.getElementById('svg');
-  const active = mode==='scenario' ? SCENARIOS[scen].layers : RINGS.map(r=>r.id);
-  let html='';
-  // soft center
-  html+=`<circle cx="${CX}" cy="${CY}" r="34" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.08)"/>`;
-  html+=`<text x="${CX}" y="${CY+4}" text-anchor="middle" fill="#f2f0e8" font-size="11" font-family="DM Sans">Wi‑Fi</text>`;
-
-  // rings back to front
-  [...RINGS].reverse().forEach((ring,i)=>{
-    const on = active.includes(ring.id);
-    const dim = mode==='scenario' && !on;
-    html+=`<circle class="orb" data-id="${ring.id}" cx="${CX}" cy="${CY}" r="${ring.r}" fill="none" stroke="${ring.color}" stroke-width="${on?3.2:1.4}" opacity="${dim?.35: on?0.95:0.55}" stroke-dasharray="${dim?'4 6':'none'}"/>`;
-    // label on ring
-    const [lx,ly]=polar(-Math.PI/2 - 0.15, ring.r);
-    html+=`<text x="${lx}" y="${ly-8}" text-anchor="middle" fill="${ring.color}" font-size="12" font-family="DM Sans" font-weight="600" opacity="${dim?0.35:1}">${ring.name}</text>`;
-  });
-
-  // path arcs
-  if(mode==='control' || mode==='story'){
-    // control: outer arcs Host↔FW and Host↔NSS
-    html+=`<path d="${arcPath(207,-2.4,-0.6)}" stroke="var(--ctrl)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/>`;
-    html+=`<path d="${arcPath(148,0.4,2.0)}" stroke="var(--ctrl)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/>`;
-    html+=`<text x="${CX+150}" y="${CY-160}" fill="var(--ctrl)" font-size="11" font-family="DM Mono">CONTROL · WMI</text>`;
-    html+=`<text x="${CX-210}" y="${CY+20}" fill="var(--ctrl)" font-size="11" font-family="DM Mono">CONTROL · NSS msg</text>`;
-  }
-  if(mode==='data' || mode==='story'){
-    html+=`<path d="${arcPath(177,2.3,3.9)}" stroke="var(--data)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/>`;
-    html+=`<path d="${arcPath(88,-0.8,0.9)}" stroke="var(--data)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/>`;
-    html+=`<text x="${CX-40}" y="${CY+210}" fill="var(--data)" font-size="11" font-family="DM Mono">DATA · SKB / HTT</text>`;
-  }
-  if(mode==='scenario'){
-    // emphasize active rings with a spoke legend
-    const layers=SCENARIOS[scen].layers;
-    layers.forEach((id,i)=>{
-      const ring=RINGS.find(r=>r.id===id);
-      const a=-Math.PI/2 + i*(Math.PI*2/Math.max(layers.length,1));
-      const [x,y]=polar(a, ring.r);
-      html+=`<circle cx="${x}" cy="${y}" r="7" fill="${ring.color}" class="pkt"/>`;
-    });
-  }
-
-  // animated packets
-  html+=`<g id="packets"></g>`;
-  svg.innerHTML=html;
-  spawnPackets();
-  renderSide();
-}
-
-function spawnPackets(){
-  const g=document.getElementById('packets');
-  g.innerHTML='';
-  const items=[];
-  if(mode==='control'||mode==='story'){
-    items.push({r:207,a:-2.4,spd:0.012,color:'#7dd3fc',label:'WMI'});
-    items.push({r:148,a:0.5,spd:0.014,color:'#7dd3fc',label:'NSS'});
-  }
-  if(mode==='data'||mode==='story'){
-    items.push({r:177,a:2.4,spd:0.02,color:'#fbbf24',label:'SKB'});
-    items.push({r:88,a:-0.5,spd:0.025,color:'#fbbf24',label:'DMA'});
-  }
-  if(mode==='scenario'){
-    const cols={apps:'#c4b5fd',host:'#6db3f2',fw:'#f0c05a',nss:'#6ecf9a',nssfw:'#e8896a'};
-    SCENARIOS[scen].layers.forEach((id,i)=>{
-      const ring=RINGS.find(r=>r.id===id);
-      items.push({r:ring.r,a:-Math.PI/2+i*0.9,spd:0.01+i*0.003,color:cols[id],label:id});
-    });
-  }
-  items.forEach((it,i)=>{
-    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('r','5'); c.setAttribute('fill',it.color); c.setAttribute('class','pkt');
-    g.appendChild(c); it.el=c;
-  });
-  function tick(){
-    items.forEach(it=>{
-      it.a+=it.spd;
-      const [x,y]=polar(it.a,it.r);
-      it.el.setAttribute('cx',x); it.el.setAttribute('cy',y);
-    });
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
-
-function renderSide(){
-  const side=document.getElementById('side');
-  const cap=document.getElementById('caption');
-  if(mode==='story'){
-    cap.textContent='Start here. Outer ring = apps. Center = NSS FW. Commands hug the outer arcs; packets hug the inner arcs.';
-    side.innerHTML=`
-      <h2>Imagine an onion</h2>
-      <p class="lede">Wi‑Fi isn’t one program. It’s five layers wrapped around each other — like rings. A command walks inward. A packet races along the rings and back out.</p>
-      <div class="bigidea"><b>Control path</b> = “change the setup” (connect, keys, add a link).<br><b>Data path</b> = “send the movie / file / iperf blast”.</div>
-      <div class="card"><h3>Plain English</h3>
-        <p>Your phone joins an AP. That is <b>control</b>. Then Netflix starts. That is <b>data</b>. Bugs love the moment you change the setup while Netflix is still flowing.</p>
-      </div>
-      <div class="card"><h3>Ring cheat sheet</h3>
-        <div class="row">
-          ${RINGS.map(r=>`<span class="chip ${r.id==='nssfw'?'nssfw':r.id} hot">${r.name}</span>`).join('')}
-        </div>
-        <ul style="margin-top:10px">${RINGS.map(r=>`<li><b>${r.name}:</b> ${r.plain}</li>`).join('')}</ul>
-      </div>
-      <div class="card"><h3>Technical (same picture)</h3>
-        <p class="tech">${RINGS.map(r=>r.name+': '+r.tech).join('\\n')}</p>
-      </div>
-      <p class="legend"><i style="background:var(--ctrl)"></i>Control (WMI / NSS msg) &nbsp; <i style="background:var(--data)"></i>Data (SKB / HTT / DMA)</p>
-    `;
-  } else if(mode==='control'){
-    cap.textContent='Blue dots ride the control arcs — nl80211 → Host → WMI → FW, and Host → NSS → NSS FW.';
-    side.innerHTML=`
-      <h2>Control path</h2>
-      <p class="simple">Think of this as <b>filing paperwork</b> for the radio. Slow, careful, must finish before traffic uses the new object.</p>
-      <div class="card"><h3>Walk inward</h3>
-        <ol style="padding-left:18px">
-          <li>App / hostapd asks Linux</li>
-          <li><b>WLAN Host</b> builds a WMI command</li>
-          <li><b>WLAN FW</b> creates peer / link / key</li>
-          <li>Host mirrors that into <b>NSS</b></li>
-          <li><b>NSS FW</b> updates fast‑path tables</li>
-        </ol>
-      </div>
-      <div class="card"><h3>Contracts (the wires)</h3>
-        <p><span class="chip host hot">nl80211</span> → <span class="chip fw hot">WMI</span> → <span class="chip nss hot">NSS msg</span> → <span class="chip nssfw hot">NSS FW ctrl</span></p>
-      </div>
-      <p class="tech">Example: ath12k_wmi_peer_create → FW peer_ast_alloc → HTT peer_map → nss_wifi_peer_create</p>
-    `;
-  } else if(mode==='data'){
-    cap.textContent='Gold dots ride the data arcs — SKBs move Host → NSS → NSS FW → radio, then completions return.';
-    side.innerHTML=`
-      <h2>Data path</h2>
-      <p class="simple">Think of this as a <b>conveyor belt of envelopes</b> (SKBs). Each envelope has one owner at a time. Lose track of the owner → memory crash.</p>
-      <div class="card"><h3>Walk the belt</h3>
-        <ol style="padding-left:18px">
-          <li>App writes bytes</li>
-          <li><b>WLAN Host</b> prepares the frame</li>
-          <li>Hands the SKB to <b>NSS Host</b> (ownership moves)</li>
-          <li><b>NSS FW</b> DMA‑maps and queues it</li>
-          <li><b>WLAN FW</b> / radio puts it on air</li>
-          <li>Completion returns → recycle the envelope</li>
-        </ol>
-      </div>
-      <div class="card"><h3>Contracts</h3>
-        <p><span class="chip host hot">netdev / SKB</span> → <span class="chip nss hot">NSS TX</span> → <span class="chip nssfw hot">DMA</span> → <span class="chip fw hot">HTT / radio</span></p>
-      </div>
-      <p class="tech">ath12k_nss_tx → nss_wifi_tx_buf → nss_dma_map_skb → TX complete → nss_skb_recycle_free</p>
-    `;
-  } else {
-    const s=SCENARIOS[scen];
-    cap.textContent=s.title+' — glowing rings are on the path; dots orbit those rings.';
-    side.innerHTML=`
-      <div class="scens" id="scens">${Object.keys(SCENARIOS).map(k=>`<button data-s="${k}" class="${k===scen?'on':''}">${SCENARIOS[k].title.split('—')[0].trim()}</button>`).join('')}</div>
-      <h2>${s.title}</h2>
-      <p class="simple">${s.plain}</p>
-      <div class="bigidea">${s.why}</div>
-      <div class="card"><h3>Control steps</h3><ul>${s.control.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-      <div class="card"><h3>Data steps</h3><ul>${s.data.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-      <div class="card"><h3>Where they collide</h3><p>${s.collide}</p></div>
-      <div class="row">${s.layers.map(id=>{const r=RINGS.find(x=>x.id===id);return `<span class="chip ${id==='nssfw'?'nssfw':id} hot">${r.name}</span>`}).join('')}</div>
-      <p class="tech">Board 1 = AP (DUT). Board 2 = STA / peer generator. Run baseline, then patched, compare gates.</p>
-    `;
-    side.querySelectorAll('#scens button').forEach(b=>b.onclick=()=>{scen=b.dataset.s;draw()});
-  }
-}
-
-document.getElementById('modes').onclick=e=>{
-  const b=e.target.closest('button'); if(!b)return;
-  mode=b.dataset.m;
-  [...document.getElementById('modes').children].forEach(x=>x.classList.toggle('on',x===b));
-  draw();
+const MODES = {
+  overview: {
+    title:"Full ring map",
+    lede:"Host DRAM holds ring memory. HAL SRNG tracks HP/TP. Doorbell tells HW a SRC ring advanced. DST rings raise MSI when filled past threshold; NAPI drains them.",
+    hot:["tcl","wbm","reo","rxdma","ce","irq"],
+    flows:["tx","rx","ctrl","irq"],
+  },
+  tx: {
+    title:"TX data path",
+    lede:"mac80211 → ath12k_dp_tx → TCL SRC descriptors → doorbell → FW/HW TX → WBM DST completion → free/recycle skb (or NSS handoff).",
+    hot:["tcl","wbm","irq"],
+    flows:["tx","irq"],
+  },
+  rx: {
+    title:"RX data path",
+    lede:"Host posts RXDMA buffers → MAC/FW DMA → REO reorder → REO DST → NAPI → stack or NSS. Refill must keep up or RX stalls.",
+    hot:["rxdma","reo","irq"],
+    flows:["rx","irq"],
+  },
+  ctrl: {
+    title:"Control plane (CE)",
+    lede:"WMI/HTT ride Copy Engines — separate rings from DP. Timeouts here show as wmi command N timeout in dmesg; peer/MLO churn hammers these pipes.",
+    hot:["ce","irq"],
+    flows:["ctrl","irq"],
+  },
+  irq: {
+    title:"Interrupt → NAPI",
+    lede:"Ring threshold or CE event → MSI → PCI ISR → napi_schedule → poll budgets across group rings → unmask. Budget exhaustion = latency / drop pressure.",
+    hot:["irq","wbm","reo","ce"],
+    flows:["irq"],
+  },
 };
-draw();
+
+let mode = "overview";
+let selected = "tcl";
+
+function el(tag, attrs={}, kids=[]){
+  const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for(const [k,v] of Object.entries(attrs)) n.setAttribute(k,v);
+  for(const c of kids) n.appendChild(typeof c==="string"?document.createTextNode(c):c);
+  return n;
+}
+
+function drawRingGlyph(x,y,color,label,id){
+  const g = el("g",{class:`ring-node`,id:`node-${id}`,transform:`translate(${x},${y})`,"data-id":id});
+  // circular buffer slots
+  const slots=12, R=34, r=22;
+  for(let i=0;i<slots;i++){
+    const a0 = (i/slots)*Math.PI*2 - Math.PI/2;
+    const a1 = ((i+0.78)/slots)*Math.PI*2 - Math.PI/2;
+    const x0=Math.cos(a0)*R, y0=Math.sin(a0)*R;
+    const x1=Math.cos(a1)*R, y1=Math.sin(a1)*R;
+    const xi=Math.cos(a1)*r, yi=Math.sin(a1)*r;
+    const xj=Math.cos(a0)*r, yj=Math.sin(a0)*r;
+    const d=`M${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1} L${xi},${yi} A${r},${r} 0 0 0 ${xj},${yj} Z`;
+    g.appendChild(el("path",{class:"slot",d,fill:color,fillOpacity:i%3===0?0.95:0.35,stroke:color,strokeOpacity:0.5,strokeWidth:"1"}));
+  }
+  g.appendChild(el("circle",{r:16,fill:"#0e1116",stroke:color,strokeWidth:"1.5"}));
+  g.appendChild(el("text",{y:4,"text-anchor":"middle",fill:"#e8edf4","font-size":"10","font-family":"IBM Plex Mono,monospace","font-weight":"500"},[label]));
+  // HP/TP ticks
+  g.appendChild(el("text",{x:0,y:-48,"text-anchor":"middle",fill:"#8b95a5","font-size":"9","font-family":"IBM Plex Mono,monospace"},["HP"]));
+  g.appendChild(el("text",{x:0,y:58,"text-anchor":"middle",fill:"#8b95a5","font-size":"9","font-family":"IBM Plex Mono,monospace"},["TP"]));
+  g.addEventListener("click",(e)=>{e.stopPropagation();select(id);});
+  return g;
+}
+
+function arrow(x1,y1,x2,y2,color,dashed=false,cls=""){
+  const g = el("g",{});
+  const m = el("marker",{id:`m-${color.replace(/[^a-z]/gi,"")}-${x1}-${y1}`,viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:6,markerHeight:6,orient:"auto"});
+  m.appendChild(el("path",{d:"M0,0 L10,5 L0,10 Z",fill:color}));
+  g.appendChild(m);
+  const attrs={x1,y1,x2,y2,stroke:color,"stroke-width":"2",fill:"none","marker-end":`url(#${m.id})`};
+  if(dashed){attrs["stroke-dasharray"]="6 4"; if(cls) attrs.class=cls;}
+  g.appendChild(el("line",attrs));
+  // attach marker defs via returning both - simpler: put marker on svg later
+  return {g, m};
+}
+
+function renderSvg(){
+  const svg = document.getElementById("svg");
+  svg.innerHTML = "";
+  const defs = el("defs",{});
+  svg.appendChild(defs);
+
+  // zones
+  const zones = [
+    {y:8,h:118,label:"HOST — Linux (ath12k + mac80211 + NAPI)",fill:"#152033"},
+    {y:136,h:300,label:"HAL SRNG — ring memory in host DRAM · doorbell · MSI",fill:"#12181f"},
+    {y:446,h:180,label:"WLAN FW / MAC HW — consumes SRC, posts DST",fill:"#1a1810"},
+  ];
+  zones.forEach(z=>{
+    svg.appendChild(el("rect",{x:16,y:z.y,width:948,height:z.h,rx:14,fill:z.fill,stroke:"#2a3340"}));
+    svg.appendChild(el("text",{x:32,y:z.y+22,fill:"#8b95a5","font-size":"11","font-family":"IBM Plex Sans,sans-serif","letter-spacing":"0.08em"},[z.label.toUpperCase()]));
+  });
+
+  // Host boxes
+  const hostBoxes=[
+    {x:40,y:44,w:160,h:56,t:"mac80211 / cfg80211",s:"ieee80211_tx / rx"},
+    {x:220,y:44,w:170,h:56,t:"ath12k DP / CE",s:"dp_tx · dp_rx · ce"},
+    {x:410,y:44,w:150,h:56,t:"NAPI poll",s:"dp_service_srng"},
+    {x:580,y:44,w:150,h:56,t:"MSI ISR",s:"pci_ext_irq",c:"var(--irq)"},
+    {x:750,y:44,w:180,h:56,t:"NSS (QSDK opt.)",s:"wifili offload",c:"var(--nss)"},
+  ];
+  hostBoxes.forEach(b=>{
+    svg.appendChild(el("rect",{x:b.x,y:b.y,width:b.w,height:b.h,rx:10,fill:"#1c2430",stroke:b.c||"#3a4658"}));
+    svg.appendChild(el("text",{x:b.x+12,y:b.y+24,fill:"#e8edf4","font-size":"12","font-weight":"600","font-family":"IBM Plex Sans,sans-serif"},[b.t]));
+    svg.appendChild(el("text",{x:b.x+12,y:b.y+42,fill:"#8b95a5","font-size":"11","font-family":"IBM Plex Mono,monospace"},[b.s]));
+  });
+
+  // Ring nodes positions
+  const pos = {
+    tcl:  [120, 280],
+    wbm:  [300, 280],
+    reo:  [480, 280],
+    rxdma:[660, 280],
+    ce:   [840, 280],
+    irq:  [655, 72], // overlay near MSI - use separate
+  };
+
+  // Draw flow arrows based on mode
+  const m = MODES[mode];
+  function addFlow(x1,y1,x2,y2,color,dash=false){
+    const id = `mk-${Math.random().toString(36).slice(2,8)}`;
+    const mk = el("marker",{id,viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:6,markerHeight:6,orient:"auto"});
+    mk.appendChild(el("path",{d:"M0,0 L10,5 L0,10 Z",fill:color}));
+    defs.appendChild(mk);
+    const line = el("line",{
+      x1,y1,x2,y2,stroke:color,"stroke-width":"2.2",fill:"none",
+      "marker-end":`url(#${id})`,
+      "stroke-dasharray": dash?"7 5":"0",
+      class: dash?"flow-anim":"",
+      opacity: m.flows.length && !dash ? "0.85":"0.85",
+    });
+    svg.appendChild(line);
+  }
+
+  if(m.flows.includes("tx")){
+    addFlow(305,100,120,230,"#5fd4a4",true);      // DP → TCL
+    addFlow(120,330,200,500,"#5fd4a4",true);      // TCL → FW
+    addFlow(280,500,300,330,"#f0b429",true);      // FW → WBM
+    addFlow(300,230,480,100,"#f0b429",true);      // WBM → NAPI
+  }
+  if(m.flows.includes("rx")){
+    addFlow(660,330,560,500,"#7dd3fc",true);      // RXDMA → FW
+    addFlow(520,500,480,330,"#e8896a",true);      // FW → REO
+    addFlow(480,230,485,100,"#e8896a",true);      // REO → NAPI
+  }
+  if(m.flows.includes("ctrl")){
+    addFlow(390,100,840,230,"#c4b5fd",true);      // DP/CE → CE rings
+    addFlow(840,330,720,520,"#c4b5fd",true);      // CE → FW WMI
+    addFlow(780,520,840,330,"#c4b5fd",true);
+  }
+  if(m.flows.includes("irq")){
+    // MSI up from rings to ISR
+    addFlow(300,230,650,100,"#ff7b72",true);
+    addFlow(480,230,650,100,"#ff7b72",true);
+    addFlow(840,230,720,100,"#ff7b72",true);
+    // ISR → NAPI
+    addFlow(650,70,520,70,"#ff7b72",false);
+  }
+
+  // Doorbell label
+  svg.appendChild(el("text",{x:40,y:168,fill:"#8b95a5","font-size":"11","font-family":"IBM Plex Mono,monospace"},["doorbell (SRC HP write)"]));
+  svg.appendChild(el("text",{x:700,y:168,fill:"#8b95a5","font-size":"11","font-family":"IBM Plex Mono,monospace"},["MSI threshold (DST)"]));
+
+  // Draw rings
+  for(const [id,[x,y]] of Object.entries(pos)){
+    if(id==="irq") continue;
+    const r = RINGS[id];
+    const node = drawRingGlyph(x,y, getComputedColor(r.color), r.short, id);
+    const hot = m.hot.includes(id);
+    node.style.opacity = hot ? "1" : "0.28";
+    svg.appendChild(node);
+    svg.appendChild(el("text",{x,y:y+78,"text-anchor":"middle",fill:hot?"#e8edf4":"#5a6575","font-size":"11","font-family":"IBM Plex Sans,sans-serif","font-weight":"600"},[r.name]));
+    svg.appendChild(el("text",{x,y:y+94,"text-anchor":"middle",fill:"#8b95a5","font-size":"10","font-family":"IBM Plex Mono,monospace"},[r.kind.split(" ")[0]]));
+  }
+
+  // IRQ node as pulse diamond near MSI
+  const irqG = el("g",{class:"ring-node",id:"node-irq","data-id":"irq",transform:"translate(655,72)",style:`opacity:${m.hot.includes("irq")?1:0.28}`});
+  irqG.appendChild(el("polygon",{points:"0,-28 28,0 0,28 -28,0",fill:"#3a1c1a",stroke:"#ff7b72","stroke-width":"2",class:"irq-pulse"}));
+  irqG.appendChild(el("text",{y:4,"text-anchor":"middle",fill:"#ff7b72","font-size":"10","font-family":"IBM Plex Mono,monospace","font-weight":"600"},["MSI"]));
+  irqG.addEventListener("click",(e)=>{e.stopPropagation();select("irq");});
+  svg.appendChild(irqG);
+
+  // FW boxes
+  const fwBoxes=[
+    {x:80,y:500,w:140,h:70,t:"TX DMA / MAC",s:"from TCL"},
+    {x:260,y:500,w:140,h:70,t:"TX status",s:"to WBM"},
+    {x:440,y:500,w:140,h:70,t:"REO / RXDMA",s:"reorder + DMA"},
+    {x:660,y:500,w:200,h:70,t:"WMI / HTT handlers",s:"CE pipes ↔ FW"},
+  ];
+  fwBoxes.forEach(b=>{
+    svg.appendChild(el("rect",{x:b.x,y:b.y,width:b.w,height:b.h,rx:10,fill:"#242014",stroke:"#5a4e30"}));
+    svg.appendChild(el("text",{x:b.x+12,y:b.y+28,fill:"#f5d78e","font-size":"12","font-weight":"600"},[b.t]));
+    svg.appendChild(el("text",{x:b.x+12,y:b.y+48,fill:"#8b95a5","font-size":"11","font-family":"IBM Plex Mono,monospace"},[b.s]));
+  });
+
+  highlightSelected();
+}
+
+function getComputedColor(cssVar){
+  const map={
+    "var(--tcl)":"#5fd4a4","var(--wbm)":"#f0b429","var(--reo)":"#e8896a",
+    "var(--ce)":"#c4b5fd","var(--irq)":"#ff7b72","#7dd3fc":"#7dd3fc",
+  };
+  return map[cssVar]||"#6eb6ff";
+}
+
+function highlightSelected(){
+  document.querySelectorAll(".ring-node").forEach(n=>{
+    n.classList.toggle("on", n.dataset.id===selected);
+  });
+}
+
+function select(id){
+  selected = id;
+  highlightSelected();
+  renderPanel();
+  renderPills();
+}
+
+function renderPills(){
+  const elp = document.getElementById("pills");
+  elp.innerHTML = Object.values(RINGS).map(r=>
+    `<button type="button" data-id="${r.id}" class="${r.id===selected?"on":""}">${r.short}</button>`
+  ).join("");
+  elp.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>select(b.dataset.id)));
+}
+
+function renderPanel(){
+  const r = RINGS[selected];
+  const m = MODES[mode];
+  document.getElementById("caption").textContent = m.lede;
+  document.getElementById("panel").innerHTML = `
+    <h2>${r.name}</h2>
+    <p class="lede">${m.title} · focus <span class="mono">${r.short}</span></p>
+    <div class="card">
+      <h3>Ring role</h3>
+      <p><span class="mono">${r.kind}</span></p>
+      <p style="margin-top:6px"><b>HP</b> — ${r.hp}</p>
+      <p><b>TP</b> — ${r.tp}</p>
+    </div>
+    <div class="card">
+      <h3>Interrupt</h3>
+      <p>${r.irq}</p>
+    </div>
+    <div class="card">
+      <h3>Code touchpoints</h3>
+      <div class="row">${r.files.map(f=>`<span class="chip hot">${f}</span>`).join("")}</div>
+      <div class="row" style="margin-top:8px">${r.symbols.map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+    </div>
+    <div class="card">
+      <h3>What it proves on the boards</h3>
+      <p>${r.proves}</p>
+      <div class="row">${r.scenarios.map(s=>`<span class="chip hot">${s}</span>`).join("")}</div>
+    </div>
+    <div class="card">
+      <h3>SRNG contract (all of these rings)</h3>
+      <ul>
+        <li>Ring memory: host DRAM, mapped to HW via HAL</li>
+        <li><span class="mono">hal_srng_access_begin / get_next / access_end</span></li>
+        <li>SRC: SW advances HP → write doorbell</li>
+        <li>DST: HW advances TP → MSI when threshold hit → NAPI reaps HP</li>
+        <li>Setup/teardown bugs land in <span class="mono">srng_setup</span> / <span class="mono">dp_srng</span> (impact_map → driver.ce)</li>
+      </ul>
+    </div>
+  `;
+}
+
+document.getElementById("modes").querySelectorAll("button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("#modes button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    mode = b.dataset.m;
+    // auto-select a hot ring for the mode
+    selected = MODES[mode].hot[0];
+    renderSvg();
+    renderPanel();
+    renderPills();
+  });
+});
+
+renderSvg();
+renderPills();
+renderPanel();
 </script>
 </body>
 </html>
