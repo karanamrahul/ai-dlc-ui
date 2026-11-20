@@ -1,0 +1,38 @@
+{
+  "scenario_id": "skb_tx_rx_pressure",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_dp_tx",
+      "ath12k_dp_rx",
+      "ath12k_dp_tx_complete",
+      "ath12k_nss_tx",
+      "ath12k_nss_tx_enqueue",
+      "ath12k_mac_op_tx"
+    ],
+    "fw": [
+      "htt_h2t_tx_frm",
+      "htt_t2h_tx_completion",
+      "htt_t2h_rx_ind"
+    ],
+    "nss": [
+      "nss_wifi_tx_buf",
+      "nss_wifi_rx_buf",
+      "nss_skb_recycle_alloc",
+      "nss_skb_recycle_free",
+      "nss_wifi_tx_complete"
+    ],
+    "nss_fw": [
+      "nss_tx_enqueue_link",
+      "nss_rx_reorder",
+      "nss_dma_map_skb"
+    ]
+  },
+  "gate_results": {
+    "no_kmemleak": [true, "empty"],
+    "no_skb_panic": [true, "no BUG_ON in skb path"],
+    "tput_drop_lt_20pct": [true, "drop 9%"],
+    "nss_pool_healthy": [true, "recycle pool watermarks ok"]
+  }
+}

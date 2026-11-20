@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>WLAN Patch Impact — Scenario Map</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1210;--panel:#171b18;--ink:#e8ede6;--muted:#8b9588;--line:#2a322c;
+  --host:#6db3f2;--fw:#f0b429;--nss:#7dcea0;--nssfw:#e07a5f;--accent:#c8e84a;
+  --hit:rgba(200,232,74,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 "IBM Plex Sans",system-ui,sans-serif;min-height:100vh}
+header{padding:20px 28px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+header h1{font-size:18px;font-weight:600;letter-spacing:-.01em}
+header p{color:var(--muted);font-size:13px}
+.wrap{display:grid;grid-template-columns:280px 1fr 320px;min-height:calc(100vh - 64px)}
+@media(max-width:1100px){.wrap{grid-template-columns:1fr;}}
+.side,.detail{border-right:1px solid var(--line);padding:18px 16px;overflow:auto}
+.detail{border-right:0;border-left:1px solid var(--line)}
+.label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:500}
+.sc{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;cursor:pointer;margin-bottom:4px}
+.sc:hover{background:#1c221e}
+.sc.on{background:var(--hit);border-color:rgba(200,232,74,.45)}
+.sc b{display:block;font-weight:560;font-size:13px}
+.sc span{color:var(--muted);font-size:12px}
+.main{padding:22px 24px;overflow:auto}
+.stack{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:0 auto}
+.layer{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--panel);position:relative;transition:border-color .25s,background .25s}
+.layer.hot{border-color:var(--c);background:color-mix(in srgb, var(--c) 12%, var(--panel))}
+.layer .name{font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.layer .name i{font-style:normal;font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace}
+.fns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:28px}
+.fn{font:500 11px/1 "IBM Plex Mono",monospace;padding:5px 8px;border-radius:6px;background:#0c0f0d;border:1px solid var(--line);color:var(--muted)}
+.fn.hit{color:var(--ink);border-color:var(--c);background:color-mix(in srgb, var(--c) 18%, #0c0f0d)}
+.arrow{text-align:center;color:var(--muted);font-size:11px;font-family:"IBM Plex Mono",monospace;padding:2px 0}
+.arrow.hot{color:var(--accent)}
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;max-width:720px;margin-left:auto;margin-right:auto}
+.board{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+.board h3{font-size:13px;font-weight:600}
+.board p{color:var(--muted);font-size:12px;margin-top:4px}
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-right:4px}
+.pill.on{border-color:var(--accent);color:var(--accent)}
+.detail h2{font-size:16px;font-weight:600;margin-bottom:6px}
+.detail .why{color:var(--muted);font-size:13px;margin-bottom:14px}
+.detail h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.detail li{margin:0 0 6px 16px;font-size:13px}
+.detail code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:#0c0f0d;padding:1px 5px;border-radius:4px}
+.qbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:#0c0f0d}
+.qbox b{color:var(--accent)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:0 auto 16px;max-width:720px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c);margin-right:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <h1>WLAN Patch Impact</h1>
+  <p>Scenario → layer → contract map for ath10 / ath11 / ath12 · 12.5</p>
+</header>
+<div class="wrap">
+  <aside class="side">
+    <div class="label">Scenarios</div>
+    <div id="list"></div>
+  </aside>
+  <main class="main">
+    <div class="boards">
+      <div class="board"><h3>Board 1 · DUT AP</h3><p>Alder under test. Flash baseline/patched. Collect coverage + logs.</p></div>
+      <div class="board"><h3>Board 2 · Peer STA</h3><p>Assoc / MLO client / peer-storm generator. Needed for peer + MLO.</p></div>
+    </div>
+    <div class="legend">
+      <span style="--c:var(--host)">Host (ath1x)</span>
+      <span style="--c:var(--fw)">WLAN FW</span>
+      <span style="--c:var(--nss)">NSS host</span>
+      <span style="--c:var(--nssfw)">NSS FW</span>
+    </div>
+    <div class="stack" id="stack"></div>
+  </main>
+  <aside class="detail" id="detail"></aside>
+</div>
+<script>
+const SCENARIOS = [
+  {id:'mlo_link_add_remove', name:'MLO link add / remove', family:'MLO', drivers:['ath12k'],
+   why:'Link state machines across host vdev/link, FW peer-link map, NSS per-link queues. Highest 12.5 regression density.',
+   layers:{host:['ath12k_mac_mlo_setup','ath12k_wmi_mlo_setup','ath12k_nss_vdev_configure'], fw:['wmi_mlo_link_set_handler','peer_mlo_map_update'], nss:['nss_wifi_vdev_mlo_config','nss_wifi_link_tx'], nss_fw:['nss_mlo_link_sched']},
+   contracts:['wmi','htt','nss_msg','nss_fw_msg'],
+   gates:['no_fw_assert','peer_count_stable','tput_drop_lt_15pct'],
+   q1:'Patch touching ath12k_wmi_mlo_setup → hop to FW handler + NSS mlo_config → run this scenario.',
+   q2:'If host TLV length fixed, check FW producer + sibling TLV parsers (peer_create, vdev_start).'},
+  {id:'slo_assoc_churn', name:'SLO assoc / disassoc churn', family:'SLO', drivers:['ath10k','ath11k','ath12k'],
+   why:'Single-link baseline. Catches vdev start/stop and peer map leaks before you blame MLO.',
+   layers:{host:['ath12k_wmi_vdev_start','ath12k_wmi_peer_create','ath12k_mac_op_sta_state'], fw:['wmi_vdev_start_handler','wmi_peer_create_handler'], nss:['nss_wifi_vdev_if_create','nss_wifi_peer_create'], nss_fw:[]},
+   contracts:['wmi','htt','nss_msg'], gates:['peer_count_stable','no_kmemleak'],
+   q1:'Any vdev/peer create path change intersects here.',
+   q2:'Compare ath10k/ath11k sibling handlers if the fix is in a shared pattern.'},
+  {id:'peer_create_delete_storm', name:'Peer create / delete storm', family:'PEER', drivers:['ath10k','ath11k','ath12k'],
+   why:'Peer object lifetime — host hash, FW AST, NSS peer table. Feeds APSS crashes when delete races TX.',
+   layers:{host:['ath12k_wmi_peer_create','ath12k_wmi_peer_delete','ath12k_nss_peer_delete'], fw:['wmi_peer_delete_handler','peer_ast_free','htt_t2h_peer_unmap'], nss:['nss_wifi_peer_create','nss_wifi_peer_delete'], nss_fw:[]},
+   contracts:['wmi','htt','nss_msg'], gates:['peer_count_stable','no_apss_crash'],
+   q1:'Peer delete ordering patches must run this + apss_crash_stress.',
+   q2:'Symmetry: NSS callback-after-delete; sibling: vdev teardown during TX.'},
+  {id:'skb_tx_rx_pressure', name:'SKB TX/RX pressure', family:'SKB', drivers:['ath10k','ath11k','ath12k'],
+   why:'SKB ownership host↔NSS. Recycle underflow, orphaned SKBs, DMA unmap-after-free under flood.',
+   layers:{host:['ath12k_dp_tx','ath12k_nss_tx','ath12k_dp_tx_complete'], fw:['htt_h2t_tx_frm','htt_t2h_tx_completion'], nss:['nss_wifi_tx_buf','nss_skb_recycle_free'], nss_fw:['nss_dma_map_skb','nss_tx_enqueue_link']},
+   contracts:['skb','nss_msg','nss_fw_msg','htt'], gates:['no_skb_panic','nss_pool_healthy'],
+   q1:'Recycle / TX complete changes light up this scenario on measured coverage.',
+   q2:'Host TX complete assuming NSS always returns SKB — check both sides.'},
+  {id:'recovery_target_assert', name:'Recovery / target assert', family:'RECOVERY', drivers:['ath10k','ath11k','ath12k'],
+   why:'FW assert → host recovery → re-assoc. Incomplete teardown leaves peer/SKB ghosts.',
+   layers:{host:['ath12k_core_reset','ath12k_nss_vdev_teardown','ath12k_dp_rx_free'], fw:['recovery_cold_boot','peer_table_wipe'], nss:['nss_wifi_reset','nss_skb_recycle_flush'], nss_fw:[]},
+   contracts:['wmi','htt','nss_msg'], gates:['recovery_completes','no_double_free'],
+   q1:'Reset / reconfigure paths → this scenario before merge.',
+   q2:'Flush paths that share recycle counters with SKB fix.'},
+  {id:'apss_crash_stress', name:'APSS crash stress', family:'APSS', drivers:['ath11k','ath12k'],
+   why:'Delete vdev/peer during traffic. Bad WMI lengths + NSS callbacks after free = host panic.',
+   layers:{host:['ath12k_mac_op_remove_interface','ath12k_nss_tx_callback','ath12k_wmi_tlv_parse_peer_delete'], fw:['wmi_peer_delete_handler'], nss:['nss_wifi_callback_after_delete','nss_wifi_tx_complete'], nss_fw:[]},
+   contracts:['wmi','nss_msg','skb'], gates:['no_apss_crash','no_kernel_oops'],
+   q1:'TLV parse + NSS callback patches → mandatory.',
+   q2:'Same race on ath11k_nss_peer_delete ordering.'},
+  {id:'rekey_gtk_ptk', name:'GTK / PTK rekey', family:'REKEY', drivers:['ath11k','ath12k'],
+   why:'Key install races with NSS crypto offload and FW key cache under traffic.',
+   layers:{host:['ath12k_mac_op_set_key','ath12k_wmi_vdev_install_key'], fw:['wmi_vdev_install_key_handler'], nss:[], nss_fw:['nss_crypto_rekey','nss_key_install']},
+   contracts:['wmi','nss_fw_msg'], gates:['no_mic_failures_spike'],
+   q1:'Crypto / key install → rekey scenario.',
+   q2:'FW key cache vs NSS key install symmetry.'},
+  {id:'roam_dfs_channel', name:'Roam + DFS', family:'DFS', drivers:['ath11k','ath12k'],
+   why:'CSA / CAC / roam interact with MLO link state — channel move mid-link.',
+   layers:{host:['ath12k_mac_op_channel_switch','ath12k_wmi_vdev_dfs_cac'], fw:['wmi_vdev_dfs_handler','radar_detect_event'], nss:[], nss_fw:[]},
+   contracts:['wmi','htt'], gates:['channel_moved','no_fw_assert'],
+   q1:'DFS / CSA patches → this scenario; if MLO enabled also re-run mlo_link_add_remove.',
+   q2:'Sibling channel-switch handlers across bands.'},
+];
+
+const LAYERS = [
+  {id:'host', name:'WLAN Host (ath10k / ath11k / ath12k)', c:'var(--host)', contractDown:'WMI / HTT / NSS msg / SKB'},
+  {id:'fw', name:'WLAN Firmware', c:'var(--fw)', contractDown:'HTT data / WMI events'},
+  {id:'nss', name:'NSS Host Driver', c:'var(--nss)', contractDown:'NSS FW msg'},
+  {id:'nss_fw', name:'NSS Firmware', c:'var(--nssfw)', contractDown:null},
+];
+
+let cur = SCENARIOS[0];
+
+function renderList(){
+  const el = document.getElementById('list');
+  el.innerHTML = SCENARIOS.map(s => `<button class="sc ${s.id===cur.id?'on':''}" data-id="${s.id}"><b>${s.name}</b><span>${s.family} · ${s.drivers.join(', ')}</span></button>`).join('');
+  el.querySelectorAll('.sc').forEach(b => b.onclick = () => { cur = SCENARIOS.find(x => x.id===b.dataset.id); paint(); });
+}
+
+function renderStack(){
+  const el = document.getElementById('stack');
+  let html = '';
+  LAYERS.forEach((L,i) => {
+    const fns = cur.layers[L.id] || [];
+    const hot = fns.length > 0;
+    html += `<div class="layer ${hot?'hot':''}" style="--c:${L.c}"><div class="name">${L.name}<i>${hot?'ACTIVE':'idle'}</i></div><div class="fns">${
+      fns.length ? fns.map(f=>`<span class="fn hit" style="--c:${L.c}">${f}</span>`).join('') : '<span class="fn">not on this path</span>'
+    }</div></div>`;
+    if (L.contractDown) {
+      const cHot = hot && (i < LAYERS.length-1) && (cur.layers[LAYERS[i+1].id]||[]).length;
+      html += `<div class="arrow ${cHot?'hot':''}">↓ contract · ${L.contractDown}</div>`;
+    }
+  });
+  el.innerHTML = html;
+}
+
+function renderDetail(){
+  const d = document.getElementById('detail');
+  d.innerHTML = `
+    <div class="label">Selected</div>
+    <h2>${cur.name}</h2>
+    <div class="why">${cur.why}</div>
+    <div>${cur.drivers.map(x=>`<span class="pill on">${x}</span>`).join('')}
+         ${cur.contracts.map(x=>`<span class="pill">${x}</span>`).join('')}</div>
+    <h3>Gates</h3>
+    <ul>${cur.gates.map(g=>`<li><code>${g}</code></li>`).join('')}</ul>
+    <div class="qbox"><b>Q1 impact</b><div style="margin-top:6px;color:var(--muted);font-size:13px">${cur.q1}</div></div>
+    <div class="qbox"><b>Q2 similar elsewhere</b><div style="margin-top:6px;color:var(--muted);font-size:13px">${cur.q2}</div></div>
+    <h3>Board roles</h3>
+    <ul>
+      <li><b>Board 1</b> runs AP + collects coverage</li>
+      <li><b>Board 2</b> drives STA / MLO / peer churn</li>
+    </ul>
+  `;
+}
+
+function paint(){ renderList(); renderStack(); renderDetail(); }
+paint();
+</script>
+</body>
+</html>

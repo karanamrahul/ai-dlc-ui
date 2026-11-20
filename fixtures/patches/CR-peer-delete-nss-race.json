@@ -1,0 +1,57 @@
+{
+  "id": "CR-peer-delete-nss-race",
+  "title": "ath12k: synchronize NSS peer delete before WMI peer delete",
+  "is_fix": true,
+  "layer": "host",
+  "layers_touched": ["host", "nss"],
+  "changed_functions": [
+    "ath12k_nss_peer_delete",
+    "ath12k_wmi_peer_delete",
+    "ath12k_peer_unmap"
+  ],
+  "static_callers": [
+    "ath12k_mac_op_sta_state",
+    "ath12k_mac_op_remove_interface"
+  ],
+  "ops_siblings": [
+    "ath12k_nss_vdev_teardown",
+    "ath12k_nss_peer_create"
+  ],
+  "contract_hops": [
+    {
+      "contract": "nss_msg",
+      "from_fn": "ath12k_nss_peer_delete",
+      "to_fn": "nss_wifi_peer_delete",
+      "to_layer": "nss",
+      "reachable": ["nss_wifi_peer_hash_remove", "nss_wifi_tx_complete"]
+    },
+    {
+      "contract": "wmi",
+      "from_fn": "ath12k_wmi_peer_delete",
+      "to_fn": "wmi_peer_delete_handler",
+      "to_layer": "fw",
+      "reachable": ["peer_ast_free", "htt_t2h_peer_unmap"]
+    }
+  ],
+  "q2_symmetry": [
+    {
+      "layer": "nss",
+      "detail": "nss_wifi_callback_after_delete can still fire TX complete after peer hash remove — needs same sync",
+      "score": 0.9
+    }
+  ],
+  "q2_siblings": [
+    {
+      "layer": "host",
+      "detail": "ath12k_nss_vdev_teardown deletes vdev while TX callbacks outstanding — same race class",
+      "score": 0.86
+    }
+  ],
+  "q2_clones": [
+    {
+      "layer": "host",
+      "detail": "ath11k_nss_peer_delete ordering looks identical to pre-fix ath12k",
+      "score": 0.78
+    }
+  ]
+}

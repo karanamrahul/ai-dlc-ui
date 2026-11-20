@@ -1,0 +1,41 @@
+{
+  "scenario_id": "mlo_link_add_remove",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "measured_on": "alder-dut fixture",
+  "functions": {
+    "host": [
+      "ath12k_mac_mlo_setup",
+      "ath12k_mac_mlo_teardown",
+      "ath12k_wmi_mlo_setup",
+      "ath12k_wmi_peer_create",
+      "ath12k_mac_op_add_interface",
+      "ath12k_mac_op_remove_interface",
+      "ath12k_dp_tx",
+      "ath12k_nss_vdev_configure"
+    ],
+    "fw": [
+      "wmi_mlo_link_set_handler",
+      "wmi_peer_create_handler",
+      "peer_mlo_map_update",
+      "htt_t2h_peer_map"
+    ],
+    "nss": [
+      "nss_wifi_vdev_mlo_config",
+      "nss_wifi_vdev_if_create",
+      "nss_wifi_link_tx",
+      "nss_wifi_peer_create"
+    ],
+    "nss_fw": [
+      "nss_mlo_link_sched",
+      "nss_tx_enqueue_link"
+    ]
+  },
+  "gate_results": {
+    "no_fw_assert": [true, "no FW assert in 180s run"],
+    "no_wmi_timeout": [true, "WMI cmd latency p99=42ms"],
+    "peer_count_stable": [true, "peer_count start=0 end=0"],
+    "no_kmemleak": [true, "kmemleak empty"],
+    "tput_drop_lt_15pct": [true, "tput drop 6% during link remove"]
+  }
+}

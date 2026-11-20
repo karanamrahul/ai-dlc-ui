@@ -1,0 +1,22 @@
+{
+  "scenario_id": "roam_dfs_channel",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_mac_op_channel_switch",
+      "ath12k_wmi_vdev_dfs_cac",
+      "ath12k_mac_update_bss_chan"
+    ],
+    "fw": [
+      "wmi_vdev_dfs_handler",
+      "channel_switch_complete",
+      "radar_detect_event"
+    ]
+  },
+  "gate_results": {
+    "no_fw_assert": [true, "clean"],
+    "channel_moved": [true, "freq updated"],
+    "no_wmi_timeout": [true, "ok"]
+  }
+}

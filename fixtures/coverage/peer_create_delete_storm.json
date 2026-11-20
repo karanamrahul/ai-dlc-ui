@@ -1,0 +1,36 @@
+{
+  "scenario_id": "peer_create_delete_storm",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_wmi_peer_create",
+      "ath12k_wmi_peer_delete",
+      "ath12k_peer_map_attach",
+      "ath12k_peer_unmap",
+      "ath12k_mac_op_sta_state",
+      "ath12k_nss_peer_create",
+      "ath12k_nss_peer_delete"
+    ],
+    "fw": [
+      "wmi_peer_create_handler",
+      "wmi_peer_delete_handler",
+      "peer_ast_alloc",
+      "peer_ast_free",
+      "htt_t2h_peer_map",
+      "htt_t2h_peer_unmap"
+    ],
+    "nss": [
+      "nss_wifi_peer_create",
+      "nss_wifi_peer_delete",
+      "nss_wifi_peer_hash_insert",
+      "nss_wifi_peer_hash_remove"
+    ]
+  },
+  "gate_results": {
+    "no_fw_assert": [true, "clean"],
+    "peer_count_stable": [true, "host/fw/nss peer tables empty"],
+    "no_kmemleak": [true, "empty"],
+    "no_apss_crash": [true, "no panic"]
+  }
+}

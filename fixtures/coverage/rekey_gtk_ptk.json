@@ -1,0 +1,25 @@
+{
+  "scenario_id": "rekey_gtk_ptk",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_mac_op_set_key",
+      "ath12k_wmi_vdev_install_key",
+      "ath12k_nss_set_key"
+    ],
+    "fw": [
+      "wmi_vdev_install_key_handler",
+      "crypto_key_cache_update"
+    ],
+    "nss_fw": [
+      "nss_crypto_rekey",
+      "nss_key_install"
+    ]
+  },
+  "gate_results": {
+    "no_mic_failures_spike": [true, "MIC fails=0"],
+    "no_fw_assert": [true, "clean"],
+    "tput_drop_lt_15pct": [true, "drop 4%"]
+  }
+}

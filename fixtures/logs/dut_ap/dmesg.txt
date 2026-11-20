@@ -1,0 +1,7 @@
+[fixture] dmesg for dut_ap — baseline 12.5
+ath12k_pci 0000:01:00.0: wmi ready (abi 12.5)
+ath12k: mac mlo setup links=2
+ath12k: wmi mlo link set ok
+nss_wifi: vdev create ifnum=4
+nss_wifi: peer create peer_id=12
+ath12k: datapath up

@@ -1,0 +1,50 @@
+{
+  "id": "CR-skb-recycle-underflow",
+  "title": "nss: fix recycle pool underflow when SKB orphaned during MLO link remove",
+  "is_fix": true,
+  "layer": "nss",
+  "layers_touched": ["nss", "nss_fw"],
+  "changed_functions": [
+    "nss_skb_recycle_free",
+    "nss_wifi_tx_complete"
+  ],
+  "static_callers": [
+    "nss_wifi_tx_buf",
+    "nss_wifi_link_tx"
+  ],
+  "ops_siblings": [
+    "nss_skb_recycle_alloc",
+    "nss_skb_recycle_flush"
+  ],
+  "contract_hops": [
+    {
+      "contract": "nss_fw_msg",
+      "from_fn": "nss_wifi_tx_complete",
+      "to_fn": "nss_dma_map_skb",
+      "to_layer": "nss_fw",
+      "reachable": ["nss_tx_enqueue_link"]
+    },
+    {
+      "contract": "skb",
+      "from_fn": "nss_skb_recycle_free",
+      "to_fn": "ath12k_dp_tx_complete",
+      "to_layer": "host",
+      "reachable": ["ath12k_dp_tx"]
+    }
+  ],
+  "q2_symmetry": [
+    {
+      "layer": "host",
+      "detail": "ath12k_dp_tx_complete assumes NSS always returns SKB — orphan path not handled on host side",
+      "score": 0.88
+    }
+  ],
+  "q2_siblings": [
+    {
+      "layer": "nss",
+      "detail": "nss_skb_recycle_flush during recovery may underflow the same counter",
+      "score": 0.81
+    }
+  ],
+  "q2_clones": []
+}

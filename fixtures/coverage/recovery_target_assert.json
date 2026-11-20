@@ -1,0 +1,31 @@
+{
+  "scenario_id": "recovery_target_assert",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_core_reset",
+      "ath12k_core_reconfigure_recovery",
+      "ath12k_mac_op_reconfig_complete",
+      "ath12k_wmi_peer_delete",
+      "ath12k_nss_vdev_teardown",
+      "ath12k_dp_rx_free"
+    ],
+    "fw": [
+      "wmi_ready_event",
+      "recovery_cold_boot",
+      "peer_table_wipe"
+    ],
+    "nss": [
+      "nss_wifi_vdev_if_delete",
+      "nss_wifi_reset",
+      "nss_skb_recycle_flush"
+    ]
+  },
+  "gate_results": {
+    "recovery_completes": [true, "reconfig done in 4.2s"],
+    "no_double_free": [true, "no double-free trace"],
+    "peer_count_stable": [true, "tables empty after recovery"],
+    "no_apss_crash": [true, "no panic"]
+  }
+}
