@@ -1,0 +1,863 @@
+{
+  "scenario": "skb_recycler_stress",
+  "title": "SKB recycler: burst traffic then idle; pool must return to baseline",
+  "build": "baseline",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 30,
+  "loops_done": 30,
+  "duration_s": 0.1,
+  "steps": {
+    "total": 65,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 0,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": []
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 411729,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 412264,
+        "MemAvailable_kB": 598000,
+        "Slab_kB": 61000,
+        "SUnreclaim_kB": 38000
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          1522,
+          1539,
+          1530,
+          1536,
+          1536,
+          1531,
+          1548,
+          1536,
+          1537,
+          1547,
+          1547,
+          1530,
+          1526,
+          1533,
+          1537,
+          1535,
+          1528,
+          1537,
+          1539,
+          1544,
+          1546,
+          1527,
+          1533,
+          1523,
+          1529,
+          1540,
+          1524,
+          1533,
+          1529,
+          1537
+        ],
+        "skbuff_fclone_cache": [
+          261,
+          266,
+          263,
+          263,
+          252,
+          262,
+          265,
+          268,
+          242,
+          253,
+          252,
+          251,
+          258,
+          265,
+          264,
+          266,
+          241,
+          242,
+          265,
+          251,
+          251,
+          256,
+          269,
+          245,
+          267,
+          268,
+          267,
+          254,
+          264,
+          260
+        ],
+        "kmalloc-256": [
+          9216,
+          9212,
+          9211,
+          9208,
+          9214,
+          9199,
+          9215,
+          9228,
+          9204,
+          9215,
+          9221,
+          9197,
+          9221,
+          9221,
+          9221,
+          9207,
+          9220,
+          9207,
+          9226,
+          9220,
+          9233,
+          9218,
+          9214,
+          9205,
+          9202,
+          9210,
+          9223,
+          9212,
+          9228,
+          9211
+        ],
+        "kmalloc-512": [
+          3572,
+          3582,
+          3589,
+          3594,
+          3586,
+          3597,
+          3599,
+          3586,
+          3590,
+          3581,
+          3580,
+          3592,
+          3595,
+          3570,
+          3574,
+          3594,
+          3583,
+          3580,
+          3588,
+          3588,
+          3600,
+          3590,
+          3596,
+          3592,
+          3578,
+          3588,
+          3576,
+          3599,
+          3585,
+          3582
+        ],
+        "kmalloc-1k": [
+          2308,
+          2302,
+          2306,
+          2297,
+          2311,
+          2297,
+          2308,
+          2320,
+          2311,
+          2310,
+          2292,
+          2287,
+          2299,
+          2302,
+          2307,
+          2307,
+          2299,
+          2299,
+          2301,
+          2290,
+          2298,
+          2315,
+          2303,
+          2309,
+          2309,
+          2314,
+          2309,
+          2298,
+          2306,
+          2297
+        ],
+        "kmalloc-2k": [
+          1027,
+          1025,
+          1027,
+          1031,
+          1013,
+          1018,
+          1016,
+          1023,
+          1025,
+          1011,
+          1026,
+          1020,
+          1027,
+          1017,
+          1029,
+          1018,
+          1033,
+          1033,
+          1021,
+          1018,
+          1018,
+          1029,
+          1013,
+          1022,
+          1019,
+          1022,
+          1019,
+          1025,
+          1020,
+          1025
+        ],
+        "kmalloc-4k": [
+          377,
+          407,
+          384,
+          377,
+          387,
+          388,
+          378,
+          396,
+          375,
+          386,
+          381,
+          394,
+          369,
+          384,
+          390,
+          402,
+          377,
+          398,
+          382,
+          385,
+          393,
+          387,
+          386,
+          371,
+          372,
+          383,
+          393,
+          383,
+          392,
+          372
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": -0.117,
+          "r2": 0.02,
+          "n": 30
+        },
+        "skbuff_fclone_cache": {
+          "slope": -0.002,
+          "r2": 0.0,
+          "n": 30
+        },
+        "kmalloc-256": {
+          "slope": 0.164,
+          "r2": 0.027,
+          "n": 30
+        },
+        "kmalloc-512": {
+          "slope": 0.035,
+          "r2": 0.001,
+          "n": 30
+        },
+        "kmalloc-1k": {
+          "slope": -0.02,
+          "r2": 0.001,
+          "n": 30
+        },
+        "kmalloc-2k": {
+          "slope": -0.051,
+          "r2": 0.006,
+          "n": 30
+        },
+        "kmalloc-4k": {
+          "slope": -0.121,
+          "r2": 0.013,
+          "n": 30
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 1532,
+        "skbuff_fclone_cache": 263,
+        "kmalloc-256": 9211,
+        "kmalloc-512": 3586,
+        "kmalloc-1k": 2307,
+        "kmalloc-2k": 1014,
+        "kmalloc-4k": 380
+      },
+      "post": {
+        "skbuff_head_cache": 1540,
+        "skbuff_fclone_cache": 260,
+        "kmalloc-256": 9221,
+        "kmalloc-512": 3581,
+        "kmalloc-1k": 2306,
+        "kmalloc-2k": 1019,
+        "kmalloc-4k": 395
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 0
+      },
+      "per_loop": [
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        },
+        {
+          "station_dump": 1,
+          "driver": 1
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 8180,
+      "post_total": 8194,
+      "per_loop": [
+        8196,
+        8187,
+        8194,
+        8192,
+        8193,
+        8196,
+        8201,
+        8195,
+        8189,
+        8188,
+        8192,
+        8193,
+        8188,
+        8204,
+        8196,
+        8198,
+        8201,
+        8192,
+        8183,
+        8190,
+        8198,
+        8192,
+        8194,
+        8186,
+        8197,
+        8202,
+        8199,
+        8193,
+        8190,
+        8185
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 0,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 0,
+        "wifili.rx_exceptions": 0,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": true,
+      "samples": [
+        {
+          "mbps": 1395.34,
+          "lost_percent": 0.076,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 0
+        },
+        {
+          "mbps": 1383.72,
+          "lost_percent": 0.038,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 1
+        },
+        {
+          "mbps": 1420.07,
+          "lost_percent": 0.053,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 2
+        },
+        {
+          "mbps": 1352.41,
+          "lost_percent": 0.07,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 3
+        },
+        {
+          "mbps": 1379.73,
+          "lost_percent": 0.046,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 4
+        },
+        {
+          "mbps": 1390.05,
+          "lost_percent": 0.012,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 5
+        },
+        {
+          "mbps": 1398.98,
+          "lost_percent": 0.045,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 6
+        },
+        {
+          "mbps": 1402.99,
+          "lost_percent": 0.045,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 7
+        },
+        {
+          "mbps": 1399.46,
+          "lost_percent": 0.084,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 8
+        },
+        {
+          "mbps": 1384.43,
+          "lost_percent": 0.066,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 9
+        },
+        {
+          "mbps": 1355.54,
+          "lost_percent": 0.037,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 10
+        },
+        {
+          "mbps": 1438.47,
+          "lost_percent": 0.047,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 11
+        },
+        {
+          "mbps": 1389.83,
+          "lost_percent": 0.078,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 12
+        },
+        {
+          "mbps": 1386.85,
+          "lost_percent": 0.064,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 13
+        },
+        {
+          "mbps": 1430.63,
+          "lost_percent": 0.032,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 14
+        },
+        {
+          "mbps": 1403.99,
+          "lost_percent": 0.066,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 15
+        },
+        {
+          "mbps": 1406.16,
+          "lost_percent": 0.079,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 16
+        },
+        {
+          "mbps": 1389.79,
+          "lost_percent": 0.02,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 17
+        },
+        {
+          "mbps": 1410.01,
+          "lost_percent": 0.045,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 18
+        },
+        {
+          "mbps": 1389.22,
+          "lost_percent": 0.059,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 19
+        },
+        {
+          "mbps": 1409.53,
+          "lost_percent": 0.058,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 20
+        },
+        {
+          "mbps": 1386.39,
+          "lost_percent": 0.038,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 21
+        },
+        {
+          "mbps": 1367.12,
+          "lost_percent": 0.039,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 22
+        },
+        {
+          "mbps": 1390.97,
+          "lost_percent": 0.06,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 23
+        },
+        {
+          "mbps": 1398.2,
+          "lost_percent": 0.066,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 24
+        },
+        {
+          "mbps": 1395.87,
+          "lost_percent": 0.065,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 25
+        },
+        {
+          "mbps": 1408.33,
+          "lost_percent": 0.054,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 26
+        },
+        {
+          "mbps": 1394.62,
+          "lost_percent": 0.019,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 27
+        },
+        {
+          "mbps": 1407.2,
+          "lost_percent": 0.038,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 28
+        },
+        {
+          "mbps": 1398.69,
+          "lost_percent": 0.094,
+          "protocol": "udp",
+          "step": "burst",
+          "loop": 29
+        }
+      ]
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 35.0
+    },
+    "recovery": {
+      "passed": 0,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 0,
+          "expected_fatal": 0,
+          "expected_fw_crash": 0,
+          "new_ramdumps": 0
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "recycler",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "pre": 8180,
+          "post": 8194,
+          "delta": 14,
+          "tolerance": 164
+        },
+        "detail": "pool back to baseline (+14)"
+      },
+      {
+        "gate": "slab_slope",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "skbuff_head_cache": {
+            "slope": -0.117,
+            "r2": 0.02,
+            "n": 30
+          },
+          "skbuff_fclone_cache": {
+            "slope": -0.002,
+            "r2": 0.0,
+            "n": 30
+          },
+          "kmalloc-256": {
+            "slope": 0.164,
+            "r2": 0.027,
+            "n": 30
+          },
+          "kmalloc-512": {
+            "slope": 0.035,
+            "r2": 0.001,
+            "n": 30
+          },
+          "kmalloc-1k": {
+            "slope": -0.02,
+            "r2": 0.001,
+            "n": 30
+          },
+          "kmalloc-2k": {
+            "slope": -0.051,
+            "r2": 0.006,
+            "n": 30
+          },
+          "kmalloc-4k": {
+            "slope": -0.121,
+            "r2": 0.013,
+            "n": 30
+          }
+        },
+        "detail": "no monotonic growth above threshold"
+      }
+    ]
+  }
+}

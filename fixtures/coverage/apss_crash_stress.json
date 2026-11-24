@@ -1,0 +1,29 @@
+{
+  "scenario_id": "apss_crash_stress",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_mac_op_remove_interface",
+      "ath12k_wmi_tlv_parse_peer_delete",
+      "ath12k_nss_peer_delete",
+      "ath12k_dp_tx",
+      "ath12k_nss_tx_callback",
+      "ath12k_peer_unmap"
+    ],
+    "fw": [
+      "wmi_peer_delete_handler",
+      "htt_t2h_peer_unmap"
+    ],
+    "nss": [
+      "nss_wifi_peer_delete",
+      "nss_wifi_tx_complete",
+      "nss_wifi_callback_after_delete"
+    ]
+  },
+  "gate_results": {
+    "no_apss_crash": [true, "no panic under delete-during-tx"],
+    "no_kernel_oops": [true, "clean"],
+    "no_kmemleak": [true, "empty"]
+  }
+}

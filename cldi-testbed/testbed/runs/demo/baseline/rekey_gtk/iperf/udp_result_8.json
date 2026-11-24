@@ -1,0 +1,17 @@
+{
+ "title": "SIMULATED",
+ "start": {
+  "test_start": {
+   "protocol": "UDP",
+   "duration": 5
+  }
+ },
+ "intervals": [],
+ "end": {
+  "sum": {
+   "bits_per_second": 198097909.41007793,
+   "lost_percent": 0.042,
+   "jitter_ms": 0.04
+  }
+ }
+}

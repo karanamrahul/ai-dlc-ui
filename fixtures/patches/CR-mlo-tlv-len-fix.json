@@ -1,0 +1,66 @@
+{
+  "id": "CR-mlo-tlv-len-fix",
+  "title": "ath12k: fix WMI MLO link TLV length check (host)",
+  "is_fix": true,
+  "layer": "host",
+  "layers_touched": ["host"],
+  "changed_functions": [
+    "ath12k_wmi_mlo_setup",
+    "ath12k_wmi_tlv_parse_mlo_link"
+  ],
+  "static_callers": [
+    "ath12k_mac_mlo_setup",
+    "ath12k_mac_op_add_interface"
+  ],
+  "ops_siblings": [
+    "ath12k_wmi_tlv_parse_peer_create",
+    "ath12k_wmi_tlv_parse_vdev_start"
+  ],
+  "contract_hops": [
+    {
+      "contract": "wmi",
+      "from_fn": "ath12k_wmi_mlo_setup",
+      "to_fn": "wmi_mlo_link_set_handler",
+      "to_layer": "fw",
+      "reachable": ["peer_mlo_map_update", "htt_t2h_peer_map"]
+    },
+    {
+      "contract": "nss_msg",
+      "from_fn": "ath12k_mac_mlo_setup",
+      "to_fn": "nss_wifi_vdev_mlo_config",
+      "to_layer": "nss",
+      "reachable": ["nss_wifi_link_tx"]
+    }
+  ],
+  "q2_symmetry": [
+    {
+      "layer": "fw",
+      "detail": "FW producer wmi_mlo_link_set_handler still emits old TLV length — host fixed consumer, producer unchecked",
+      "score": 0.92
+    },
+    {
+      "layer": "host",
+      "detail": "ath11k backport path ath11k_wmi_tlv_parse_mlo_compat (if present) may share the same length bug",
+      "score": 0.7
+    }
+  ],
+  "q2_siblings": [
+    {
+      "layer": "host",
+      "detail": "ath12k_wmi_tlv_parse_peer_create uses same TLV length helper pattern without bounds check",
+      "score": 0.84
+    },
+    {
+      "layer": "host",
+      "detail": "ath12k_wmi_tlv_parse_vdev_start — same family, same missing max-len clamp",
+      "score": 0.8
+    }
+  ],
+  "q2_clones": [
+    {
+      "layer": "nss",
+      "detail": "Near-copy of pre-fix length logic in nss_wifi_vdev_mlo_config msg decode",
+      "score": 0.73
+    }
+  ]
+}

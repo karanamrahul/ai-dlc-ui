@@ -1,0 +1,150 @@
+# Scenario catalog — each one maps to board actions + expected coverage layers.
+# Start with these 8. Expand only after SZZ recall proves gaps.
+
+scenarios:
+  - id: mlo_link_add_remove
+    name: MLO link add / remove
+    family: MLO
+    drivers: [ath12k]
+    boards: [dut_ap, peer_sta]
+    why: >
+      Most 12.5 regressions are MLO link state machines — host vdev/link,
+      FW peer-link map, NSS offload per-link queues.
+    steps:
+      - setup_ap_mlo_2link
+      - associate_mlo_sta
+      - add_secondary_link
+      - traffic_bidirectional_30s
+      - remove_secondary_link
+      - re_add_secondary_link
+      - teardown
+    contracts: [wmi, htt, nss_msg, nss_fw_msg]
+    layers: [host, fw, nss, nss_fw]
+    gates: [no_fw_assert, no_wmi_timeout, peer_count_stable, no_kmemleak, tput_drop_lt_15pct]
+    hot_symbols_hint:
+      host: [ath12k_mac_mlo_setup, ath12k_wmi_mlo_setup, ath12k_mac_op_remove_interface]
+      fw: [wmi_mlo_link_set_handler, peer_mlo_map_update]
+      nss: [nss_wifi_vdev_mlo_config, nss_wifi_link_tx]
+
+  - id: slo_assoc_churn
+    name: SLO associate / disassociate churn
+    family: SLO
+    drivers: [ath10k, ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: Baseline single-link path. Catches vdev start/stop and peer map leaks.
+    steps:
+      - setup_ap_slo
+      - assoc_disassoc_loop_50
+      - traffic_between_loops
+      - teardown
+    contracts: [wmi, htt, nss_msg]
+    layers: [host, fw, nss]
+    gates: [no_fw_assert, peer_count_stable, no_kmemleak, no_wmi_timeout]
+
+  - id: peer_create_delete_storm
+    name: Peer create / delete storm
+    family: PEER
+    drivers: [ath10k, ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: >
+      Peer object lifetime bugs — host peer hash, FW peer map, NSS peer
+      create/delete ordering — show up as APSS crashes and SKB orphans.
+    steps:
+      - setup_ap
+      - spawn_n_clients_24
+      - rapid_connect_disconnect_120s
+      - verify_peer_tables_empty
+      - teardown
+    contracts: [wmi, htt, nss_msg]
+    layers: [host, fw, nss]
+    gates: [no_fw_assert, peer_count_stable, no_kmemleak, no_apss_crash]
+
+  - id: skb_tx_rx_pressure
+    name: SKB TX/RX pressure + recycle
+    family: SKB
+    drivers: [ath10k, ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: >
+      SKB ownership across host↔NSS. Recycle pool exhaustion, orphaned SKBs,
+      and DMA unmap-after-free show under sustained traffic.
+    steps:
+      - setup_ap
+      - associate_sta
+      - iperf_tcp_bidir_60s
+      - iperf_udp_flood_30s
+      - drop_and_recover_traffic
+      - check_skb_pools
+      - teardown
+    contracts: [skb, nss_msg, nss_fw_msg, htt]
+    layers: [host, nss, nss_fw, fw]
+    gates: [no_kmemleak, no_skb_panic, tput_drop_lt_20pct, nss_pool_healthy]
+
+  - id: recovery_target_assert
+    name: Target assert / recovery recycle
+    family: RECOVERY
+    drivers: [ath10k, ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: Simulated FW assert → host recovery → re-assoc. Catches incomplete teardown.
+    steps:
+      - setup_ap
+      - associate_sta
+      - inject_fw_assert_or_simulate
+      - wait_recovery_complete
+      - re_associate_and_traffic
+      - teardown
+    contracts: [wmi, htt, nss_msg]
+    layers: [host, fw, nss]
+    gates: [recovery_completes, no_double_free, peer_count_stable, no_apss_crash]
+
+  - id: apss_crash_stress
+    name: APSS crash stress (host panic paths)
+    family: APSS
+    drivers: [ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: >
+      APSS / host crashes from bad WMI lengths, peer ID reuse, and NSS
+      callbacks after vdev delete. Stress deletes during traffic.
+    steps:
+      - setup_ap
+      - associate_sta_traffic
+      - delete_vdev_during_tx
+      - peer_delete_during_rx
+      - watch_kernel_log_30s
+      - teardown
+    contracts: [wmi, nss_msg, skb]
+    layers: [host, nss, fw]
+    gates: [no_apss_crash, no_kernel_oops, no_kmemleak]
+
+  - id: rekey_gtk_ptk
+    name: GTK / PTK rekey under traffic
+    family: REKEY
+    drivers: [ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: Crypto key install races with NSS offload and FW key cache.
+    steps:
+      - setup_ap_wpa3
+      - associate_sta
+      - traffic_start
+      - force_rekey_loop_20
+      - traffic_verify
+      - teardown
+    contracts: [wmi, nss_fw_msg]
+    layers: [host, fw, nss_fw]
+    gates: [no_mic_failures_spike, no_fw_assert, tput_drop_lt_15pct]
+
+  - id: roam_dfs_channel
+    name: Roam + DFS channel switch
+    family: DFS
+    drivers: [ath11k, ath12k]
+    boards: [dut_ap, peer_sta]
+    why: Channel switch / CAC / roam state machines interact with MLO links.
+    steps:
+      - setup_ap_dfs_channel
+      - associate_sta
+      - inject_radar_or_csa
+      - verify_channel_move
+      - traffic_after_move
+      - teardown
+    contracts: [wmi, htt]
+    layers: [host, fw]
+    gates: [no_fw_assert, channel_moved, no_wmi_timeout]

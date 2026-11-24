@@ -1,0 +1,34 @@
+{
+  "scenario_id": "slo_assoc_churn",
+  "build": "12.5-baseline",
+  "driver": "ath12k",
+  "functions": {
+    "host": [
+      "ath12k_mac_op_add_interface",
+      "ath12k_mac_op_remove_interface",
+      "ath12k_wmi_vdev_start",
+      "ath12k_wmi_vdev_down",
+      "ath12k_wmi_peer_create",
+      "ath12k_wmi_peer_delete",
+      "ath12k_mac_op_sta_state"
+    ],
+    "fw": [
+      "wmi_vdev_start_handler",
+      "wmi_vdev_down_handler",
+      "wmi_peer_create_handler",
+      "wmi_peer_delete_handler"
+    ],
+    "nss": [
+      "nss_wifi_vdev_if_create",
+      "nss_wifi_vdev_if_delete",
+      "nss_wifi_peer_create",
+      "nss_wifi_peer_delete"
+    ]
+  },
+  "gate_results": {
+    "no_fw_assert": [true, "clean"],
+    "peer_count_stable": [true, "stable"],
+    "no_kmemleak": [true, "empty"],
+    "no_wmi_timeout": [true, "ok"]
+  }
+}

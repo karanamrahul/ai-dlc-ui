@@ -1,0 +1,199 @@
+{
+  "_doc": "Risk-based selection: regexes over touched file paths / function names -> components. Scenarios declare the components they exercise; select = intersection, ranked by weight. Scenarios scoring below min_score are dropped (the 'always' smoke set is kept).",
+  "vocabulary": [
+    "hostapd",
+    "wpa_supplicant",
+    "nl80211",
+    "cfg80211",
+    "mac80211",
+    "driver.core",
+    "driver.peer",
+    "driver.mlo",
+    "driver.vdev",
+    "driver.crypto",
+    "driver.roam",
+    "driver.dfs",
+    "driver.dp_tx",
+    "driver.dp_rx",
+    "driver.ce",
+    "driver.init",
+    "driver.recovery",
+    "wmi",
+    "htt",
+    "fw",
+    "nss",
+    "recycler",
+    "skb"
+  ],
+  "weights": {
+    "driver.peer": 3,
+    "driver.mlo": 3,
+    "driver.recovery": 3,
+    "wmi": 2,
+    "htt": 2,
+    "fw": 2,
+    "skb": 2,
+    "recycler": 3,
+    "nss": 3,
+    "driver.dp_tx": 2,
+    "driver.dp_rx": 2,
+    "driver.ce": 2,
+    "driver.init": 3
+  },
+  "rules": [
+    {
+      "re": "srng_setup|_init\\b|_probe|_alloc\\b|cleanup|deinit|_setup\\b|_free\\b|_destroy|_remove\\b",
+      "components": [
+        "driver.init"
+      ]
+    },
+    {
+      "re": "peer|sta_(add|remove|state)|station",
+      "components": [
+        "driver.peer",
+        "mac80211"
+      ]
+    },
+    {
+      "re": "mlo|_ml_|mld|vif_links|link_(add|del|remove|set|active)|reconfig",
+      "components": [
+        "driver.mlo",
+        "driver.peer"
+      ]
+    },
+    {
+      "re": "vdev|_vif|add_interface|remove_interface|bss_info|start_ap|stop_ap",
+      "components": [
+        "driver.vdev",
+        "mac80211"
+      ]
+    },
+    {
+      "re": "key|crypt|rekey|gtk|ptk|frag",
+      "components": [
+        "driver.crypto",
+        "mac80211"
+      ]
+    },
+    {
+      "re": "roam|reassoc|_ft_|ft\\.c|neighbor",
+      "components": [
+        "driver.roam",
+        "mac80211"
+      ]
+    },
+    {
+      "re": "dfs|radar|cac|csa|chan(nel)?_switch",
+      "components": [
+        "driver.dfs",
+        "cfg80211"
+      ]
+    },
+    {
+      "re": "dp_tx|tx_compl|wbm|tcl|htt_tx|tx\\.c",
+      "components": [
+        "driver.dp_tx",
+        "skb",
+        "htt"
+      ]
+    },
+    {
+      "re": "dp_rx|reo|rx_desc|rx\\.c|dp_mon|mon\\.c",
+      "components": [
+        "driver.dp_rx",
+        "skb",
+        "htt"
+      ]
+    },
+    {
+      "re": "/ce\\.c|_ce_|srng|hal|dp\\.c|dp_srng",
+      "components": [
+        "driver.ce",
+        "driver.dp_tx",
+        "driver.dp_rx"
+      ]
+    },
+    {
+      "re": "wmi",
+      "components": [
+        "wmi",
+        "fw"
+      ]
+    },
+    {
+      "re": "htt",
+      "components": [
+        "htt",
+        "fw"
+      ]
+    },
+    {
+      "re": "coredump|recovery|restart|reset|qmi|mhi|ramdump|rddm|firmware|fw\\.c|ahb_remove|core\\.c",
+      "components": [
+        "driver.recovery",
+        "fw"
+      ]
+    },
+    {
+      "re": "nss",
+      "components": [
+        "nss"
+      ]
+    },
+    {
+      "re": "skb_recycler|recycl",
+      "components": [
+        "recycler",
+        "skb"
+      ]
+    },
+    {
+      "re": "skb|kfree_skb|dev_kfree|alloc_skb",
+      "components": [
+        "skb"
+      ]
+    },
+    {
+      "re": "(^|\\s)(a/|b/)?net/mac80211/|\\bieee80211_",
+      "components": [
+        "mac80211"
+      ]
+    },
+    {
+      "re": "(^|\\s)(a/|b/)?net/wireless/|\\bcfg80211_",
+      "components": [
+        "cfg80211"
+      ]
+    },
+    {
+      "re": "nl80211",
+      "components": [
+        "nl80211",
+        "cfg80211"
+      ]
+    },
+    {
+      "re": "hostapd",
+      "components": [
+        "hostapd"
+      ]
+    },
+    {
+      "re": "wpa_supplicant",
+      "components": [
+        "wpa_supplicant"
+      ]
+    },
+    {
+      "re": "mac\\.c|_mac_",
+      "components": [
+        "driver.core",
+        "mac80211"
+      ]
+    }
+  ],
+  "always": [
+    "slo_assoc_basic"
+  ],
+  "min_score": 2
+}

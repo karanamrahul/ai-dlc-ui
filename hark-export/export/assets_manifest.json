@@ -1,0 +1,186 @@
+{
+  "note": "Binary assets omitted from git; URLs retained",
+  "count": 266,
+  "entries": [
+    {
+      "file": "asset_0.woff2",
+      "url": "https://assets.hark.com/fonts/GT-Standard-L-Standard-Semibold.woff2",
+      "ct": "font/woff2",
+      "len": 63260
+    },
+    {
+      "file": "asset_1.woff2",
+      "url": "https://assets.hark.com/fonts/GT-Standard-L-Standard-Medium.woff2",
+      "ct": "font/woff2",
+      "len": 62772
+    },
+    {
+      "file": "asset_2.woff2",
+      "url": "https://assets.hark.com/fonts/GT-Standard-L-Standard-Regular.woff2",
+      "ct": "font/woff2",
+      "len": 62732
+    },
+    {
+      "file": "asset_3.js",
+      "url": "https://assets.hark.com/assets/D5PcU9iX.js",
+      "ct": "text/javascript",
+      "len": 1009
+    },
+    {
+      "file": "asset_4.js",
+      "url": "https://assets.hark.com/assets/0XPGnzk9.js",
+      "ct": "text/javascript",
+      "len": 1034
+    },
+    {
+      "file": "asset_5.js",
+      "url": "https://assets.hark.com/assets/DY8c16Vs.js",
+      "ct": "text/javascript",
+      "len": 2108
+    },
+    {
+      "file": "asset_6.js",
+      "url": "https://assets.hark.com/assets/DA5lVK1j.js",
+      "ct": "text/javascript",
+      "len": 5955
+    },
+    {
+      "file": "asset_7.js",
+      "url": "https://assets.hark.com/assets/sh5Zzo_t.js",
+      "ct": "text/javascript",
+      "len": 911
+    },
+    {
+      "file": "asset_8.js",
+      "url": "https://assets.hark.com/assets/DoQS2TNJ.js",
+      "ct": "text/javascript",
+      "len": 1062
+    },
+    {
+      "file": "asset_9.js",
+      "url": "https://assets.hark.com/assets/CTzlVYCj.js",
+      "ct": "text/javascript",
+      "len": 28563
+    },
+    {
+      "file": "asset_10.js",
+      "url": "https://assets.hark.com/assets/sBNZMA2P.js",
+      "ct": "text/javascript",
+      "len": 14957
+    },
+    {
+      "file": "asset_11.js",
+      "url": "https://assets.hark.com/assets/B9bBJQ7Z.js",
+      "ct": "text/javascript",
+      "len": 28571
+    },
+    {
+      "file": "asset_12.js",
+      "url": "https://assets.hark.com/assets/BT1Iz7Ci.js",
+      "ct": "text/javascript",
+      "len": 70446
+    },
+    {
+      "file": "asset_13.js",
+      "url": "https://assets.hark.com/assets/DO6Idphd.js",
+      "ct": "text/javascript",
+      "len": 7896
+    },
+    {
+      "file": "asset_14.js",
+      "url": "https://assets.hark.com/assets/DUE8NTE1.js",
+      "ct": "text/javascript",
+      "len": 15507
+    },
+    {
+      "file": "asset_15.js",
+      "url": "https://assets.hark.com/assets/CmXf2yhv.js",
+      "ct": "text/javascript",
+      "len": 1049
+    },
+    {
+      "file": "asset_16.js",
+      "url": "https://assets.hark.com/assets/DE6GYcCu.js",
+      "ct": "text/javascript",
+      "len": 1159
+    },
+    {
+      "file": "asset_17.js",
+      "url": "https://assets.hark.com/assets/Da8Dv92P.js",
+      "ct": "text/javascript",
+      "len": 2341
+    },
+    {
+      "file": "asset_18.js",
+      "url": "https://assets.hark.com/assets/BGmuDAFX.js",
+      "ct": "text/javascript",
+      "len": 5434
+    },
+    {
+      "file": "asset_19.js",
+      "url": "https://assets.hark.com/assets/k_XQYzMa.js",
+      "ct": "text/javascript",
+      "len": 2356
+    },
+    {
+      "file": "asset_20.js",
+      "url": "https://assets.hark.com/assets/DAevVvxR.js",
+      "ct": "text/javascript",
+      "len": 63578
+    },
+    {
+      "file": "asset_21.js",
+      "url": "https://assets.hark.com/assets/Dxeemh5U.js",
+      "ct": "text/javascript",
+      "len": 6165
+    },
+    {
+      "file": "asset_22.js",
+      "url": "https://assets.hark.com/assets/B5Xma3jR.js",
+      "ct": "text/javascript",
+      "len": 13148
+    },
+    {
+      "file": "asset_23.js",
+      "url": "https://assets.hark.com/assets/DzeMwxic.js",
+      "ct": "text/javascript",
+      "len": 27169
+    },
+    {
+      "file": "asset_24.js",
+      "url": "https://assets.hark.com/assets/CvhjboHD.js",
+      "ct": "text/javascript",
+      "len": 146056
+    },
+    {
+      "file": "asset_25.js",
+      "url": "https://assets.hark.com/assets/CKmHvg7f.js",
+      "ct": "text/javascript",
+      "len": 26910
+    },
+    {
+      "file": "asset_26.js",
+      "url": "https://assets.hark.com/assets/BpJeahOD.js",
+      "ct": "text/javascript",
+      "len": 128927
+    },
+    {
+      "file": "asset_27.js",
+      "url": "https://assets.hark.com/assets/CMh7_Dhe.js",
+      "ct": "text/javascript",
+      "len": 14807
+    },
+    {
+      "file": "asset_28.js",
+      "url": "https://assets.hark.com/assets/D_mqtp2-.js",
+      "ct": "text/javascript",
+      "len": 1940
+    },
+    {
+      "file": "asset_29.js",
+      "url": "https://assets.hark.com/assets/CLbaA9VN.js",
+      "ct": "text/javascript",
+      "len": 917
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+{
+  "scenario": "rekey_gtk",
+  "title": "GTK/PTK rekey under UDP traffic",
+  "build": "candidate",
+  "status": "ran",
+  "aborted": null,
+  "simulated": true,
+  "loops_planned": 10,
+  "loops_done": 10,
+  "duration_s": 0.1,
+  "steps": {
+    "total": 35,
+    "failed": 0,
+    "skipped_placeholder": []
+  },
+  "signals": {
+    "dmesg": {
+      "available": true,
+      "new_lines": 0,
+      "rebooted": false,
+      "pstore_files": [],
+      "hits": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "events": {
+        "fatal": 0,
+        "fw_crash": 0,
+        "timeout": 0,
+        "peer": 0,
+        "warning": 0
+      },
+      "samples": {
+        "fatal": [],
+        "fw_crash": [],
+        "timeout": [],
+        "peer": [],
+        "warning": []
+      }
+    },
+    "ramdump": {
+      "available": true,
+      "pre": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "post": [
+        "/sys/class/devcoredump/devcd1",
+        "/sys/class/devcoredump/devcd2",
+        "/sys/class/devcoredump/devcd3",
+        "/sys/class/devcoredump/devcd4",
+        "/tmp/apss_ramdump_SIMULATED.bin"
+      ],
+      "new": []
+    },
+    "meminfo": {
+      "available": true,
+      "pre": {
+        "available": true,
+        "MemFree_kB": 412183,
+        "MemAvailable_kB": 597995,
+        "Slab_kB": 61005,
+        "SUnreclaim_kB": 38005
+      },
+      "post": {
+        "available": true,
+        "MemFree_kB": 411707,
+        "MemAvailable_kB": 597995,
+        "Slab_kB": 61005,
+        "SUnreclaim_kB": 38005
+      }
+    },
+    "slab": {
+      "available": true,
+      "why": null,
+      "series": {
+        "skbuff_head_cache": [
+          1540,
+          1529,
+          1528,
+          1533,
+          1544,
+          1527,
+          1533,
+          1511,
+          1536,
+          1537
+        ],
+        "skbuff_fclone_cache": [
+          255,
+          259,
+          259,
+          247,
+          263,
+          249,
+          251,
+          258,
+          268,
+          254
+        ],
+        "kmalloc-256": [
+          9226,
+          9223,
+          9254,
+          9233,
+          9231,
+          9237,
+          9226,
+          9231,
+          9221,
+          9241
+        ],
+        "kmalloc-512": [
+          3586,
+          3580,
+          3575,
+          3585,
+          3588,
+          3586,
+          3579,
+          3575,
+          3592,
+          3573
+        ],
+        "kmalloc-1k": [
+          2304,
+          2304,
+          2298,
+          2320,
+          2314,
+          2305,
+          2305,
+          2303,
+          2305,
+          2311
+        ],
+        "kmalloc-2k": [
+          1014,
+          1018,
+          1022,
+          1026,
+          1024,
+          1035,
+          1023,
+          1019,
+          1012,
+          1010
+        ],
+        "kmalloc-4k": [
+          385,
+          380,
+          389,
+          387,
+          392,
+          389,
+          372,
+          388,
+          396,
+          396
+        ]
+      },
+      "fit": {
+        "skbuff_head_cache": {
+          "slope": -0.485,
+          "r2": 0.026,
+          "n": 10
+        },
+        "skbuff_fclone_cache": {
+          "slope": 0.285,
+          "r2": 0.018,
+          "n": 10
+        },
+        "kmalloc-256": {
+          "slope": -0.055,
+          "r2": 0.0,
+          "n": 10
+        },
+        "kmalloc-512": {
+          "slope": -0.321,
+          "r2": 0.023,
+          "n": 10
+        },
+        "kmalloc-1k": {
+          "slope": 0.248,
+          "r2": 0.014,
+          "n": 10
+        },
+        "kmalloc-2k": {
+          "slope": -0.552,
+          "r2": 0.051,
+          "n": 10
+        },
+        "kmalloc-4k": {
+          "slope": 0.958,
+          "r2": 0.16,
+          "n": 10
+        }
+      },
+      "pre": {
+        "skbuff_head_cache": 1538,
+        "skbuff_fclone_cache": 273,
+        "kmalloc-256": 9226,
+        "kmalloc-512": 3592,
+        "kmalloc-1k": 2324,
+        "kmalloc-2k": 1015,
+        "kmalloc-4k": 383
+      },
+      "post": {
+        "skbuff_head_cache": 1534,
+        "skbuff_fclone_cache": 258,
+        "kmalloc-256": 9233,
+        "kmalloc-512": 3593,
+        "kmalloc-1k": 2311,
+        "kmalloc-2k": 1033,
+        "kmalloc-4k": 384
+      }
+    },
+    "kmemleak": {
+      "available": true,
+      "total": 0,
+      "wlan_related": 0,
+      "wlan_samples": []
+    },
+    "peers": {
+      "available": true,
+      "why": null,
+      "pre": {
+        "station_dump": 0,
+        "driver": 5
+      },
+      "post": {
+        "station_dump": 0,
+        "driver": 5
+      },
+      "per_loop": [
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        },
+        {
+          "station_dump": 1,
+          "driver": 6
+        }
+      ],
+      "sources": [
+        "/sys/kernel/debug/ath12k/pci-0000:01:00.0/mac0/peers"
+      ]
+    },
+    "recycler": {
+      "available": true,
+      "why": null,
+      "pre_total": 8201,
+      "post_total": 8181,
+      "per_loop": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "keys": [
+        "pool_stats.cpu0_pool_count",
+        "pool_stats.cpu1_pool_count",
+        "pool_stats.cpu2_pool_count",
+        "pool_stats.cpu3_pool_count"
+      ]
+    },
+    "nss": {
+      "available": true,
+      "why": null,
+      "delta": {
+        "n2h.rx_pkts": 0,
+        "n2h.tx_pkts": 0,
+        "wifili.tx_drops": 0,
+        "wifili.rx_exceptions": 0,
+        "drv.tx_fail": 0
+      }
+    },
+    "throughput": {
+      "available": true,
+      "samples": [
+        {
+          "mbps": 202.91,
+          "lost_percent": 0.026,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 0
+        },
+        {
+          "mbps": 200.54,
+          "lost_percent": 0.05,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 1
+        },
+        {
+          "mbps": 203.87,
+          "lost_percent": 0.094,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 2
+        },
+        {
+          "mbps": 197.24,
+          "lost_percent": 0.035,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 3
+        },
+        {
+          "mbps": 199.89,
+          "lost_percent": 0.059,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 4
+        },
+        {
+          "mbps": 197.92,
+          "lost_percent": 0.079,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 5
+        },
+        {
+          "mbps": 197.93,
+          "lost_percent": 0.06,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 6
+        },
+        {
+          "mbps": 200.39,
+          "lost_percent": 0.078,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 7
+        },
+        {
+          "mbps": 197.29,
+          "lost_percent": 0.079,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 8
+        },
+        {
+          "mbps": 200.57,
+          "lost_percent": 0.048,
+          "protocol": "udp",
+          "step": "udp_result",
+          "loop": 9
+        }
+      ]
+    },
+    "cpu": {
+      "available": true,
+      "util_pct": 42.0
+    },
+    "recovery": {
+      "passed": 0,
+      "failed": 0,
+      "failed_ids": []
+    },
+    "console": {
+      "available": false,
+      "why": "not configured / sim"
+    }
+  },
+  "_label": "SIMULATED - generated by the testbed sim backend; NOT measured on hardware",
+  "absolute": {
+    "verdict": "PASS",
+    "gates": [
+      {
+        "gate": "crash",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": {
+          "fatal": 0,
+          "fw_crash": 0,
+          "expected_fatal": 0,
+          "expected_fw_crash": 0,
+          "new_ramdumps": 0
+        },
+        "detail": "no unexpected crash/assert signatures"
+      },
+      {
+        "gate": "timeouts",
+        "verdict": "PASS",
+        "baseline": null,
+        "candidate": 0,
+        "detail": "0 WMI/HTT timeout line(s) (no baseline to diff)"
+      },
+      {
+        "gate": "udp_loss",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": 0.0595,
+        "detail": "no baseline UDP samples"
+      },
+      {
+        "gate": "throughput",
+        "verdict": "NA",
+        "baseline": null,
+        "candidate": {
+          "udp_result": 200.1
+        },
+        "detail": "no baseline to compare"
+      }
+    ]
+  }
+}

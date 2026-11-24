@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Wi-Fi Patch QA — How Every Scenario Connects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#12151a;
+  --muted:#5c6570;
+  --line:#d8dde4;
+  --paper:#f3f5f7;
+  --panel:#ffffff;
+  --accent:#1a6b5a;
+  --accent-soft:#d9efe8;
+  --fail:#b42318;
+  --fail-soft:#fde8e6;
+  --warn:#9a6700;
+  --warn-soft:#fff3d6;
+  --pass:#0f6b45;
+  --pass-soft:#dff5ea;
+  --nav:#1b1f26;
+  --hero-a:#3d5a73;
+  --hero-b:#c47a4a;
+  --radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font:400 15px/1.5 Sora,system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #e7eef5 0%, transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, #f3e6da 0%, transparent 50%),
+    var(--paper);
+  min-height:100vh;
+}
+a{color:inherit}
+.nav-wrap{position:sticky;top:14px;z-index:40;display:flex;justify-content:center;padding:0 14px;pointer-events:none}
+.nav{
+  pointer-events:auto;
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;
+  background:var(--nav);color:#eef1f5;
+  padding:6px 8px 6px 10px;border-radius:999px;
+  box-shadow:0 10px 30px rgba(18,21,26,.22);
+}
+.nav a,.nav button{
+  appearance:none;border:0;background:transparent;color:inherit;
+  font:500 12px/1 Sora,sans-serif;padding:9px 12px;border-radius:999px;cursor:pointer;text-decoration:none;
+}
+.nav a:hover,.nav button:hover{background:rgba(255,255,255,.08)}
+.nav a.on,.nav button.on{background:#fff;color:var(--nav)}
+.nav .theme{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(135deg,#fff 50%,#1b1f26 50%);margin-left:4px}
+main{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+.hero{
+  position:relative;overflow:hidden;border-radius:28px;min-height:min(68vh,620px);
+  color:#fff;padding:36px 36px 28px;
+  background:
+    linear-gradient(135deg, rgba(20,28,40,.55), rgba(40,28,20,.35)),
+    radial-gradient(800px 420px at 20% 30%, var(--hero-a), transparent 60%),
+    radial-gradient(700px 380px at 85% 20%, var(--hero-b), transparent 55%),
+    linear-gradient(160deg,#2a3848,#6b5a4a 55%,#8a6a4e);
+  animation:heroShift 18s ease-in-out infinite alternate;
+}
+@keyframes heroShift{
+  from{filter:saturate(1) brightness(1)}
+  to{filter:saturate(1.08) brightness(1.04)}
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 70% 80%, rgba(255,255,255,.12), transparent 40%);
+  animation:glow 8s ease-in-out infinite alternate;
+}
+@keyframes glow{from{opacity:.4}to{opacity:.85}}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  font:500 12px/1 Sora,sans-serif;backdrop-filter:blur(8px);
+}
+.hero h1{
+  font:650 clamp(2rem,4.4vw,3.35rem)/1.08 Fraunces,Georgia,serif;
+  letter-spacing:-.02em;max-width:14ch;margin:22px 0 14px;position:relative;z-index:1;
+}
+.hero .lede{max-width:46ch;font-size:15px;line-height:1.55;opacity:.92;position:relative;z-index:1}
+.hero .stackline{margin-top:28px;font:500 12px/1.4 "IBM Plex Mono",monospace;opacity:.78;position:relative;z-index:1}
+.next{
+  position:absolute;top:28px;right:28px;z-index:2;width:min(280px,42vw);
+  background:rgba(255,255,255,.94);color:var(--ink);border-radius:16px;padding:14px 14px 12px;
+  transform:translateY(8px);opacity:0;animation:rise .7s ease .25s forwards;
+}
+@keyframes rise{to{transform:none;opacity:1}}
+.next .k{font:600 11px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.next p{font-size:13px;line-height:1.45;margin-bottom:12px}
+.next a{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:100%;padding:10px 12px;border-radius:10px;background:#e8eaee;font:600 13px Sora,sans-serif;text-decoration:none;
+}
+.next a:hover{background:#dfe3e9}
+section{padding:56px 0 8px;scroll-margin-top:72px}
+.eyebrow{font:600 12px/1 Sora,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+section h2{font:650 clamp(1.55rem,2.6vw,2.15rem)/1.15 Fraunces,Georgia,serif;letter-spacing:-.02em;max-width:22ch;margin-bottom:12px}
+.sub{color:var(--muted);max-width:58ch;margin-bottom:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:860px){
+  .grid-3,.grid-2{grid-template-columns:1fr}
+  .next{position:static;width:auto;margin-top:22px}
+  .hero{min-height:auto;padding:28px 22px}
+}
+.board{
+  border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:16px 16px 14px;
+}
+.board h3{font:600 14px/1.3 Sora,sans-serif;margin-bottom:6px}
+.board p{font-size:13px;color:var(--muted)}
+.mono{font-family:"IBM Plex Mono",monospace}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+th{font-weight:600;background:#f7f8fa;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+.v{font:600 12px/1 "IBM Plex Mono",monospace;padding:4px 8px;border-radius:999px;display:inline-block}
+.v.FAIL{background:var(--fail-soft);color:var(--fail)}
+.v.WARN{background:var(--warn-soft);color:var(--warn)}
+.v.PASS{background:var(--pass-soft);color:var(--pass)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 18px}
+.pills button{
+  appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:999px;padding:8px 12px;font:500 12px Sora,sans-serif;cursor:pointer;
+}
+.pills button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pills button .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--fail);margin-left:6px;vertical-align:middle}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-bottom:16px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle;border:1px solid var(--line)}
+.legend .code{background:#fff}.legend .msg{background:transparent;border-style:dashed}.legend .fw{background:#1b1f26;border-color:#1b1f26}.legend .bad{border-color:var(--fail);background:#fff}
+.flow{
+  display:grid;grid-template-columns:1.05fr .85fr .95fr;gap:14px;
+}
+@media(max-width:900px){.flow{grid-template-columns:1fr}}
+.box{
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;font-size:13px;margin-bottom:8px;
+}
+.box.fw{background:#1b1f26;color:#fff;border-color:#1b1f26}
+.box.msg{border-style:dashed;background:#fafbfc}
+.box.bad{border-color:var(--fail);box-shadow:inset 0 0 0 1px rgba(180,35,24,.15)}
+.arrow{font:500 11px/1 "IBM Plex Mono",monospace;color:var(--muted);margin:2px 0 8px 4px}
+.kicker{font:600 11px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+@media(max-width:800px){.kpi{grid-template-columns:repeat(2,1fr)}}
+.kpi .board b{display:block;font:650 1.7rem/1 Fraunces,serif;margin-bottom:4px}
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel)}
+.step{display:grid;grid-template-columns:72px 1fr;gap:8px;padding:18px 18px;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .n{font:650 1.45rem/1 Fraunces,serif}
+.step h3{font:600 15px/1.3 Sora,sans-serif;margin-bottom:4px}
+.step p{font-size:13px;color:var(--muted)}
+.note{
+  margin-top:18px;padding:12px 14px;border-radius:12px;background:#eef2f6;color:var(--muted);font-size:13px;
+}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.links a{
+  display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;
+  border:1px solid var(--line);background:#fff;font:600 12px Sora,sans-serif;text-decoration:none;
+}
+.links a.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.sim-banner{
+  margin:18px 0 0;padding:10px 12px;border-radius:12px;
+  background:var(--warn-soft);color:var(--warn);font:500 12px/1.4 Sora,sans-serif;
+}
+body.dark{
+  --ink:#e8edf2;--muted:#9aa3ad;--line:#2c333c;--paper:#101418;--panel:#171b21;
+  --accent:#5ec2a8;--accent-soft:#1c332d;--fail:#ff8f84;--fail-soft:#3a1c1a;
+  --warn:#f0c35a;--warn-soft:#3a2e14;--pass:#69d2a3;--pass-soft:#173328;--nav:#0c0f13;
+  background:
+    radial-gradient(1000px 480px at 0% 0%, #1a2430 0%, transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, #2a211c 0%, transparent 50%),
+    var(--paper);
+  color:var(--ink);
+}
+body.dark .hero{filter:none}
+body.dark table th{background:#12161c}
+body.dark .box{background:#1c222a}
+body.dark .box.fw{background:#0b0d10}
+body.dark .next{background:rgba(23,27,33,.96)}
+body.dark .next a{background:#2a313a;color:var(--ink)}
+body.dark .note{background:#1a2028}
+body.dark .links a{background:#1c222a}
+body.dark .pills button{background:#1c222a}
+body.dark .pills button.on{background:#eef1f5;color:#12151a}
+</style>
+</head>
+<body>
+<div class="nav-wrap">
+  <nav class="nav" id="nav">
+    <a href="#setup" data-sec="setup">Setup</a>
+    <a href="#gates" data-sec="gates">Gates</a>
+    <a href="#scenarios" data-sec="scenarios">Scenarios</a>
+    <a href="#drivers" data-sec="drivers">Drivers</a>
+    <a href="#real" data-sec="real">Real vs sim</a>
+    <a href="#start" data-sec="start">Start</a>
+    <button class="theme" id="theme" title="Toggle theme" aria-label="Toggle theme"></button>
+  </nav>
+</div>
+
+<main>
+  <header class="hero" id="top">
+    <span class="badge">For Rahul · QSDK 12.5 · 2 Alder boards</span>
+    <h1>Wi-Fi Patch QA: How Every Scenario Connects</h1>
+    <p class="lede">Testing a patch has two halves. Static, with no board: what the patch touches and where the same bug may live. Dynamic, on the boards: only the scenarios it touches, baseline then patched, judged by gates.</p>
+    <p class="stackline">Host driver ath10k/ath11k/ath12k · WLAN FW · NSS + NSS FW · SKB recycler</p>
+    <aside class="next">
+      <div class="k">Next step</div>
+      <p>Run the testbed on the Alder boards with a baseline image. Start with <span class="mono">slo_assoc_basic</span> and <span class="mono">peer_churn</span>.</p>
+      <a href="#start">Start on the boards</a>
+    </aside>
+  </header>
+
+  <section id="setup">
+    <div class="eyebrow">The two-board setup</div>
+    <h2>One board runs the image under test, the other plays the clients.</h2>
+    <p class="sub">Host PC runs the CLDI testbed over SSH (serial optional for crash capture). DUT = alder-1 AP. Peer = alder-2 STA / MLO STA.</p>
+    <div class="grid-3">
+      <div class="board">
+        <h3>Host PC · runs the testbed</h3>
+        <p>python3 -m testbed · crash capture via serial console · compares baseline vs candidate</p>
+      </div>
+      <div class="board">
+        <h3>1 · Static, no board</h3>
+        <p>Regex impact map over touched files/functions → components → ranked scenarios. Smoke always keeps <span class="mono">slo_assoc_basic</span>.</p>
+      </div>
+      <div class="board">
+        <h3>2 · Dynamic, on the boards</h3>
+        <p>Flash baseline → run → flash candidate → run same list → compare gates. Exit 2 on FAIL for CI.</p>
+      </div>
+    </div>
+    <div class="links">
+      <a class="primary" href="../cldi-testbed/testbed/README.md">Testbed README</a>
+      <a href="rings.html">Queue · Interrupt · SRNG</a>
+      <a href="index.html">Scenario map</a>
+    </div>
+  </section>
+
+  <section id="gates">
+    <div class="eyebrow">The gates</div>
+    <h2>Each gate compares the candidate run against the baseline run.</h2>
+    <p class="sub">Missing signals are reported “not available”, never as a failure. Thresholds live in the compare report.</p>
+    <table>
+      <thead><tr><th>Gate</th><th>Rule</th><th>This sim</th></tr></thead>
+      <tbody id="gates-body"></tbody>
+    </table>
+    <div class="sim-banner" id="fired-banner"></div>
+  </section>
+
+  <section id="scenarios">
+    <div class="eyebrow">Scenario by scenario</div>
+    <h2>Where a patch travels, where it breaks, and how each scenario is tested.</h2>
+    <p class="sub">Live finding from this sim: FW crash on MLO link removal, peer leak on churn, recycler pool drain, NSS throughput warn.</p>
+    <div class="pills" id="scen-pills"></div>
+    <div class="legend">
+      <span><i class="code"></i>Linux code</span>
+      <span><i class="msg"></i>WMI / HTT message</span>
+      <span><i class="fw"></i>Firmware</span>
+      <span><i class="bad"></i>Failure point</span>
+    </div>
+    <div id="scen-detail"></div>
+  </section>
+
+  <section id="drivers">
+    <div class="eyebrow">Scenario × driver</div>
+    <h2>Most scenarios apply to every driver; MLO and the QSDK parts do not.</h2>
+    <p class="sub">On the Alder boards (assumed ath12k-class), every “all” row runs on ath12k only.</p>
+    <table>
+      <thead><tr><th>Scenario</th><th>Drivers</th><th>Caps</th><th>Sim verdict</th></tr></thead>
+      <tbody id="drivers-body"></tbody>
+    </table>
+  </section>
+
+  <section id="real">
+    <div class="eyebrow">What is real vs simulated</div>
+    <h2>The static results are real; the testbed results only prove the pipeline.</h2>
+    <div class="kpi">
+      <div class="board"><b id="k-commits">6</b><span>Upstream commits analyzed (Hark static)</span></div>
+      <div class="board"><b id="k-faults">4</b><span>Seeded faults in this sim</span></div>
+      <div class="board"><b id="k-fired">—</b><span>Gates that fired</span></div>
+      <div class="board"><b id="k-boards">0</b><span>Runs on Alder boards</span></div>
+    </div>
+    <div class="grid-3">
+      <div class="board">
+        <h3>REAL · Static impact</h3>
+        <p>Upstream Linux commits mapped to callers and scenarios. No board required.</p>
+      </div>
+      <div class="board">
+        <h3>SIMULATED · Testbed demo</h3>
+        <p>Four seeded faults; with faults off, five seeds all compared PASS.</p>
+      </div>
+      <div class="board">
+        <h3>NOT YET · On the Alder boards</h3>
+        <p>Fill boards.json VERIFY fields, enable kmemleak/GCOV, then run baseline twice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="eyebrow">Start on the boards</div>
+    <h2>Five steps from a blank testbed to a CI gate.</h2>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><div><h3>Configure — fill boards.json</h3><p>IPs, interfaces, driver, QSDK flags. Replace every VERIFY.</p></div></div>
+      <div class="step"><div class="n">02</div><div><h3>Debug image — enable kmemleak and GCOV</h3><p>On the debug image only. Throughput compares use a separate image without them.</p></div></div>
+      <div class="step"><div class="n">03</div><div><h3>Baseline — run slo_assoc_basic + peer_churn twice</h3><p>Confirm the noise is low before you trust the gates.</p></div></div>
+      <div class="step"><div class="n">04</div><div><h3>Prove the gates — known-bad historical patch</h3><p>Confirm the gates fire. The sim candidate already seeds four faults for pipeline check.</p></div></div>
+      <div class="step"><div class="n">05</div><div><h3>CI — wire into Gerrit</h3><p class="mono">patch_impact → testbed select → run → compare</p></div></div>
+    </div>
+    <div class="note">Static results are REAL on upstream Linux; testbed results in this package are SIMULATED. Nothing has run on the Alder boards yet.</div>
+    <div class="links">
+      <a class="primary" href="#gates">Open sim compare</a>
+      <a href="../runs/sim-demo/report.md">Full Markdown report</a>
+      <a href="data/sim_compare.json">report.json</a>
+    </div>
+  </section>
+</main>
+
+<script>
+const GATE_RULES = [
+  {gate:"crash", rule:"Any unexpected kernel panic or FW assert"},
+  {gate:"timeouts", rule:"New WMI/HTT timeout lines vs baseline"},
+  {gate:"peer_leak", rule:"Driver peer table count change across a scenario must be 0"},
+  {gate:"slab_slope", rule:"skbuff/kmalloc slab growth per loop, linear regression vs baseline"},
+  {gate:"kmemleak", rule:"New unreferenced objects (ath/mac80211/nss/skb)"},
+  {gate:"recycler", rule:"SKB recycler pool must return to baseline after cooldown"},
+  {gate:"throughput", rule:"Drop vs baseline (warn >5%, fail >10%)"},
+  {gate:"udp_loss", rule:"Change vs baseline"},
+  {gate:"cpu", rule:"Change vs baseline"},
+  {gate:"nss", rule:"NSS counter change vs baseline"},
+  {gate:"recovery", rule:"After an injected crash, every recovery check must pass"},
+];
+
+const SCEN_UI = {
+  mlo: {
+    id:"mlo_link_churn", label:"MLO", badge:"ath12k only",
+    title:"MLO: multi-link peers",
+    blurb:"An MLD AP adds and removes links; each link gets its own peer and vdev in the driver and the FW.",
+    breaks:["Per-link peer deletes race on the delete response.","Crash on link removal (seeded FW assert at loop 7)."],
+    flow:[
+      {t:"userspace", c:"hostapd MLD: link add / remove"},
+      {a:"nl80211 link commands"},
+      {t:"code", c:"nl80211 → cfg80211"},
+      {a:"link change"},
+      {t:"code", c:"mac80211 change_vif_links, change_sta_links, sta_state"},
+      {a:"driver ops → WMI"},
+      {t:"msg", c:"WMI peer / link delete"},
+      {a:"to firmware"},
+      {t:"fw", c:"WLAN FW"},
+      {a:"response, per link"},
+      {t:"msg", c:"WMI_PEER_DELETE_RESP_EVENTID"},
+      {a:"ath12k_wmi_op_rx"},
+      {t:"bad", c:"Race on delete resp · ath12k_peer_delete_resp_event"},
+    ],
+    static:{commit:"01cc0f59aac", date:"2026-06-29", msg:"wifi: ath12k: fix MLO peer delete race", fns:["ath12k_peer_delete","ath12k_peer_create","ath12k_peer_mlo_link_peers_delete","ath12k_peer_delete_resp_event","ath12k_wait_for_peer_delete_done"]}
+  },
+  slo: {
+    id:"slo_assoc_basic", label:"SLO", badge:"smoke · always",
+    title:"SLO association smoke",
+    blurb:"Bring AP up, associate one STA, run a short TCP download. Always kept in select.",
+    breaks:["Association / key install failures.","Unexpected WMI timeouts on first traffic."],
+    flow:[
+      {t:"userspace", c:"hostapd + wpa_supplicant"},
+      {a:"nl80211"},
+      {t:"code", c:"cfg80211 / mac80211"},
+      {a:"driver ops"},
+      {t:"code", c:"ath12k peer + vdev"},
+      {a:"WMI / HTT"},
+      {t:"fw", c:"WLAN FW"},
+    ],
+    static:null
+  },
+  peer: {
+    id:"peer_churn", label:"Peer lifecycle", badge:"all drivers",
+    title:"Peer churn",
+    blurb:"Repeated associate/disassociate cycles; peer table and slab must return to baseline.",
+    breaks:["Silent peer refcount leak (seeded: 1 of 10 teardowns).","Slab growth without dmesg."],
+    flow:[
+      {t:"userspace", c:"wpa_cli disconnect / reconnect"},
+      {a:"nl80211"},
+      {t:"code", c:"mac80211 sta_state"},
+      {a:"driver peer ops"},
+      {t:"bad", c:"peer left in driver table"},
+      {t:"fw", c:"WLAN FW peer map"},
+    ],
+    static:null
+  },
+  skb_own: {
+    id:"skb_ownership_traffic", label:"SKB ownership", badge:"data path",
+    title:"SKB ownership under traffic",
+    blurb:"Traffic while ownership moves across host / NSS / FW. Watches slab + kmemleak.",
+    breaks:["skb_over_panic","Ownership handoff leaks"],
+    flow:[{t:"code",c:"mac80211 TX"},{a:"htt / nss"},{t:"fw",c:"WLAN FW"},{a:"RX"},{t:"code",c:"DP RX → stack"}],
+    static:null
+  },
+  skb_rec: {
+    id:"skb_recycler_stress", label:"SKB recycler", badge:"QSDK",
+    title:"SKB recycler stress",
+    blurb:"Burst traffic; recycler pool must refill after cooldown.",
+    breaks:["Pool does not return to baseline (seeded).","skbuff_head_cache slope FAIL."],
+    flow:[{t:"code",c:"skb_recycler pool"},{a:"alloc under traffic"},{t:"bad",c:"150 skbs never returned / burst"},{a:"cooldown"},{t:"code",c:"pool should match baseline"}],
+    static:null
+  },
+  nss: {
+    id:"nss_offload_traffic", label:"NSS offload", badge:"QSDK",
+    title:"NSS offload traffic",
+    blurb:"iperf through NSS wifili path; throughput and NSS counters vs baseline.",
+    breaks:["7% tcp_dl dip → WARN","wifili.tx_drops spike → WARN"],
+    flow:[{t:"code",c:"host DP"},{a:"NSS msg"},{t:"code",c:"qca-nss-drv wifili"},{a:"NSS FW"},{t:"fw",c:"NSS FW + WLAN FW"}],
+    static:null
+  },
+  fw: {
+    id:"fw_crash_recovery", label:"FW crash", badge:"live finding", hot:true,
+    title:"FW crash recovery (SSR)",
+    blurb:"Inject firmware crash; recovery checks must all pass. Hark notes a possible ath12k twin of an ath11k recovery bug.",
+    breaks:["Recovery check failure after inject.","Peer/table state after SSR."],
+    flow:[{t:"code",c:"simulate_fw_crash"},{a:"MHI / assert"},{t:"fw",c:"WLAN FW crash"},{a:"SSR"},{t:"code",c:"ath12k recovery + re-init"}],
+    static:null
+  },
+  apss: {
+    id:"apss_crash_recovery", label:"APSS crash", badge:"destructive",
+    title:"APSS host crash recovery",
+    blurb:"Host panic → reboot → pstore/ramdump → WLAN back up.",
+    breaks:["Missing pstore / ramdump","WLAN not restored after reboot"],
+    flow:[{t:"code",c:"sysrq / panic"},{a:"reboot"},{t:"code",c:"pstore + ramdump"},{a:"bring-up"},{t:"fw",c:"WLAN FW reload"}],
+    static:null
+  },
+  rekey: {
+    id:"rekey_gtk", label:"Rekey", badge:"crypto",
+    title:"GTK rekey under traffic",
+    blurb:"Rotate GTK while UDP/TCP run; no timeouts, no throughput cliff.",
+    breaks:["Key install race","Traffic loss across rekey"],
+    flow:[{t:"userspace",c:"hostapd REKEY_GTK"},{a:"nl80211"},{t:"code",c:"mac80211 crypto"},{a:"WMI"},{t:"fw",c:"WLAN FW keys"}],
+    static:null
+  },
+};
+
+let COMPARE = null;
+let SCENARIOS = [];
+
+async function load(){
+  const [c,s] = await Promise.all([
+    fetch("data/sim_compare.json").then(r=>r.json()),
+    fetch("data/scenarios.json").then(r=>r.json()),
+  ]);
+  COMPARE = c; SCENARIOS = s;
+  renderGates();
+  renderPills();
+  renderDrivers();
+  document.getElementById("k-faults").textContent = Object.keys(c.sim?.faults_active||{}).length;
+  document.getElementById("k-fired").textContent = (c.fired||[]).length;
+  const overall = c.overall || "—";
+  document.getElementById("fired-banner").textContent =
+    `SIMULATED compare overall ${overall}. Seeded faults: ${Object.keys(c.sim?.faults_active||{}).join(", ") || "none"}.`;
+  selectScen("mlo");
+}
+
+function worstVerdict(gate){
+  const hits = (COMPARE.fired||[]).filter(f=>f.gate===gate);
+  if(hits.some(h=>h.verdict==="FAIL")) return "FAIL";
+  if(hits.some(h=>h.verdict==="WARN")) return "WARN";
+  // scan scenario gates
+  let v = "PASS";
+  for(const sc of (COMPARE.scenarios||[])){
+    const g = (sc.gates||[]).find(x=>x.gate===gate);
+    if(!g) continue;
+    if(g.verdict==="FAIL") return "FAIL";
+    if(g.verdict==="WARN") v = "WARN";
+  }
+  return v;
+}
+
+function renderGates(){
+  const body = document.getElementById("gates-body");
+  body.innerHTML = GATE_RULES.map(g=>{
+    const v = worstVerdict(g.gate);
+    return `<tr><td class="mono">${g.gate}</td><td>${g.rule}</td><td><span class="v ${v}">${v}</span></td></tr>`;
+  }).join("");
+}
+
+function renderPills(){
+  const el = document.getElementById("scen-pills");
+  el.innerHTML = Object.entries(SCEN_UI).map(([k,s])=>
+    `<button type="button" data-k="${k}">${s.label}${s.hot?'<span class="dot"></span>':''}</button>`
+  ).join("");
+  el.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>selectScen(b.dataset.k)));
+}
+
+function selectScen(key){
+  document.querySelectorAll("#scen-pills button").forEach(b=>b.classList.toggle("on", b.dataset.k===key));
+  const s = SCEN_UI[key];
+  const meta = SCENARIOS.find(x=>x.id===s.id) || {};
+  const sc = (COMPARE.scenarios||[]).find(x=>x.scenario===s.id || x.id===s.id) || {};
+  const verdict = sc.verdict || "—";
+  const fired = (COMPARE.fired||[]).filter(f=>f.scenario===s.id);
+  const flowHtml = (s.flow||[]).map(step=>{
+    if(step.a) return `<div class="arrow">${step.a}</div>`;
+    const cls = step.t==="fw"?"fw": step.t==="msg"?"msg": step.t==="bad"?"bad":"";
+    return `<div class="box ${cls}">${step.c}</div>`;
+  }).join("");
+  const staticHtml = s.static ? `
+    <div class="kicker">REAL · upstream Linux · static</div>
+    <div class="box">Commit <span class="mono">${s.static.commit}</span> (${s.static.date})<br/>“${s.static.msg}”</div>
+    <div class="box mono">${s.static.fns.join("<br/>")}</div>` :
+    `<div class="kicker">Static</div><div class="box">No linked upstream commit in this guide panel.</div>`;
+  document.getElementById("scen-detail").innerHTML = `
+    <div class="flow">
+      <div>
+        <div class="kicker">${s.badge}</div>
+        <h3 style="font:650 1.25rem/1.2 Fraunces,serif;margin-bottom:8px">${s.title}</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px">${s.blurb}</p>
+        ${flowHtml}
+      </div>
+      <div>
+        <div class="kicker">Where it breaks</div>
+        ${(s.breaks||[]).map(b=>`<div class="box bad">${b}</div>`).join("")}
+        <div class="kicker" style="margin-top:14px">Board test · ${s.id}</div>
+        <div class="box">Verdict <span class="v ${verdict}">${verdict}</span></div>
+        <div class="box">Loops ${meta.loops ?? "—"} · gates ${(meta.gates||[]).join(", ")||"—"}</div>
+        ${fired.map(f=>`<div class="box bad"><span class="mono">${f.gate}</span> ${f.verdict}: ${f.detail}</div>`).join("") || `<div class="box">No gates fired for this scenario in the sim.</div>`}
+      </div>
+      <div>${staticHtml}</div>
+    </div>`;
+}
+
+function renderDrivers(){
+  const byId = Object.fromEntries((COMPARE.scenarios||[]).map(s=>[s.scenario||s.id, s]));
+  const body = document.getElementById("drivers-body");
+  body.innerHTML = SCENARIOS.map(s=>{
+    const v = (byId[s.id]||{}).verdict || "—";
+    const drivers = (s.drivers||[]).join(", ");
+    const caps = (s.requires_caps||[]).join(", ") || "—";
+    return `<tr><td><span class="mono">${s.id}</span></td><td>${drivers}</td><td>${caps}</td><td><span class="v ${v}">${v}</span></td></tr>`;
+  }).join("");
+}
+
+// nav active state
+const secs = [...document.querySelectorAll("section[id], #top")];
+const navLinks = [...document.querySelectorAll("#nav a[data-sec]")];
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const id = e.target.id;
+    navLinks.forEach(a=>a.classList.toggle("on", a.dataset.sec===id));
+  });
+},{rootMargin:"-40% 0px -50% 0px", threshold:0});
+document.querySelectorAll("section[id]").forEach(s=>io.observe(s));
+
+document.getElementById("theme").addEventListener("click",()=>{
+  document.body.classList.toggle("dark");
+});
+
+load().catch(err=>{
+  document.getElementById("fired-banner").textContent = "Failed to load sim report: "+err;
+});
+</script>
+</body>
+</html>

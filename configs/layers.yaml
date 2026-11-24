@@ -1,0 +1,80 @@
+# Four code layers for WLAN 12.5 / ath1x stack.
+# A "contract" is a message family that crosses a layer boundary.
+
+layers:
+  host:
+    id: host
+    name: WLAN Host Driver
+    trees: [ath10k, ath11k, ath12k]
+    notes: >
+      Linux mac80211/cfg80211 driver. ath10k = QCA988x era (WMI),
+      ath11k = WCN6855/QCN90xx (WMI + HTT), ath12k = Wi-Fi 7 / MLO era.
+    coverage: gcov_or_kcov
+    contracts_out: [wmi, htt, nl80211_vendor, nss_msg]
+
+  fw:
+    id: fw
+    name: WLAN Firmware
+    trees: [wlan_fw]
+    notes: Handles WMI commands/events and HTT data path; peer/vdev state lives here.
+    coverage: fw_event_ids_or_func_trace
+    contracts_in: [wmi, htt]
+    contracts_out: [htt_data, wmi_event]
+
+  nss:
+    id: nss
+    name: NSS Host Driver
+    trees: [nss_drv]
+    notes: Offload datapath; SKB ownership and recirculation bugs often land here.
+    coverage: gcov_or_kcov
+    contracts_in: [nss_msg, skb]
+    contracts_out: [nss_fw_msg]
+
+  nss_fw:
+    id: nss_fw
+    name: NSS Firmware
+    trees: [nss_fw]
+    notes: Accelerated TX/RX, rekey offload, MLO link scheduling when enabled.
+    coverage: nss_stats_counters
+    contracts_in: [nss_fw_msg]
+
+# Cross-layer contracts — the hop points for Q1 impact and Q2 symmetry.
+contracts:
+  - id: wmi
+    from: host
+    to: fw
+    examples: [WMI_PEER_CREATE_CMDID, WMI_VDEV_START, WMI_MLO_LINK_SET]
+  - id: htt
+    from: host
+    to: fw
+    examples: [HTT_T2H_PEER_MAP, HTT_H2T_TX_FRM, HTT_T2H_PKTLOG]
+  - id: nss_msg
+    from: host
+    to: nss
+    examples: [NSS_WIFI_VDEV_IF_CREATE, NSS_WIFI_PEER_CREATE, NSS_WIFI_STATS]
+  - id: nss_fw_msg
+    from: nss
+    to: nss_fw
+    examples: [NSS_TX_METADATA, NSS_RX_REORDER, NSS_CRYPTO_REKEY]
+  - id: nl80211_vendor
+    from: userspace
+    to: host
+    examples: [QCA_NL80211_VENDOR_SUBCMD_SET_WIFI_CONFIGURATION]
+  - id: skb
+    from: host
+    to: nss
+    examples: [skb_orphan, nss_tx_buf, recycle_pool]
+
+drivers:
+  ath10k:
+    mlo: false
+    primary_contracts: [wmi, htt]
+    focus: [SLO, PEER, SKB, RECOVERY]
+  ath11k:
+    mlo: false
+    primary_contracts: [wmi, htt, nss_msg]
+    focus: [SLO, PEER, SKB, RECOVERY, DFS]
+  ath12k:
+    mlo: true
+    primary_contracts: [wmi, htt, nss_msg, nss_fw_msg]
+    focus: [MLO, SLO, PEER, SKB, RECOVERY, APSS, REKEY, ROAM]

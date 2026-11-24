@@ -1,0 +1,37 @@
+# Two Alder boards — DUT + peer generator.
+
+boards:
+  dut_ap:
+    id: dut_ap
+    role: device_under_test
+    hostname: alder-dut  # override via env DUT_HOST
+    ssh_user: root
+    ifaces: [wlan0, wlan1]  # MLO may use multiple
+    collects: [dmesg, fw_logs, gcov, nss_stats, kmemleak]
+    flash:
+      host_module: ath12k
+      fw_image: WLAN_FW_12_5.bin
+      nss_image: NSS_FW_12_5.bin
+
+  peer_sta:
+    id: peer_sta
+    role: peer_generator
+    hostname: alder-peer  # override via env PEER_HOST
+    ssh_user: root
+    ifaces: [wlan0]
+    collects: [dmesg, assoc_log]
+    notes: >
+      Acts as STA / MLO client. For peer-storm, spawn multiple virtual
+      stations (mac80211_hwsim on peer, or multiple wpa_supplicant ifaces).
+
+topology:
+  link: ethernet_backhaul_or_rf_isolated
+  traffic_tool: iperf3
+  control: ssh
+
+env_overrides:
+  DUT_HOST: "SSH host for board 1 (AP)"
+  PEER_HOST: "SSH host for board 2 (STA)"
+  DUT_IFACE: "wlan0"
+  PEER_IFACE: "wlan0"
+  FIXTURE_MODE: "1 = no boards, use fixtures (default in this cloud VM)"

@@ -1,0 +1,18 @@
+{
+ "title": "SIMULATED",
+ "start": {
+  "test_start": {
+   "protocol": "TCP",
+   "duration": 10
+  }
+ },
+ "intervals": [],
+ "end": {
+  "sum_sent": {
+   "bits_per_second": 1712583702.8422647
+  },
+  "sum_received": {
+   "bits_per_second": 1710872830.0122526
+  }
+ }
+}

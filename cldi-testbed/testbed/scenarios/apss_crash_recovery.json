@@ -1,0 +1,81 @@
+{
+  "id": "apss_crash_recovery",
+  "title": "APSS (host kernel) crash -> reboot -> ramdump/pstore -> service restored",
+  "proves": "Host crash path produces a usable dump and the board comes back with WLAN up. DESTRUCTIVE: reboots the DUT.",
+  "applies_to": {
+    "drivers": [
+      "ath10k",
+      "ath11k",
+      "ath12k"
+    ],
+    "destructive": true
+  },
+  "components": [
+    "driver.recovery",
+    "driver.init",
+    "fw",
+    "nss"
+  ],
+  "loops": 1,
+  "cooldown_s": 30,
+  "expected": {
+    "fatal_events_per_loop": 1,
+    "peers_after": 0
+  },
+  "signals": [
+    "console/pstore panic text",
+    "ramdump",
+    "recovery checks"
+  ],
+  "gates": [
+    "crash",
+    "recovery"
+  ],
+  "steps": {
+    "setup": [
+      {
+        "id": "ap_up",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 90
+      }
+    ],
+    "loop": [
+      {
+        "id": "panic",
+        "on": "dut",
+        "action": "apss_crash",
+        "cmd": "echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger",
+        "ignore_rc": true,
+        "timeout_s": 10,
+        "wait_reachable_s": 600
+      },
+      {
+        "id": "rec_ap",
+        "on": "dut",
+        "action": "check",
+        "cmd": "(for i in $(seq 1 60); do hostapd_cli -i {ap_if} status | grep -q state=ENABLED && exit 0; sleep 1; done; exit 1)",
+        "timeout_s": 180,
+        "recovery_check": true
+      },
+      {
+        "id": "rec_assoc",
+        "on": "peer",
+        "action": "check",
+        "cmd": "wpa_cli -i {sta_if} reconnect && (for i in $(seq 1 40); do wpa_cli -i {sta_if} status | grep -q wpa_state=COMPLETED && exit 0; sleep 0.5; done; exit 1)",
+        "timeout_s": 60,
+        "recovery_check": true
+      }
+    ],
+    "teardown": [
+      {
+        "id": "disassoc",
+        "on": "peer",
+        "action": "disassoc",
+        "cmd": "wpa_cli -i {sta_if} disconnect",
+        "wait_s": 1
+      }
+    ]
+  }
+}
