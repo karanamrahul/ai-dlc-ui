@@ -40,7 +40,8 @@ FIXTURE_MODE=1 python demo/run_demo.py
 ```
 
 - **`hiring/index.html`** / **`web/guide.html`** — Patch QA storyboard
-- **`CLDI-time-machine.html`** / **`hiring/CLDI-time-machine.html`** — CLDI Time Machine (feature 0 → hero CR journey)  
+- **`CLDI-time-machine.html`** / **`hiring/CLDI-time-machine.html`** — CLDI Time Machine (feature 0 → hero CR journey)
+- **`hark-export-cldi/`** — Hark capture of the same board ([live](https://hark.com/site/f43d67fc-3b43-4c40-879d-3e76a87f6031?hark_region=us)): screenshots + gallery  
 - **`web/rings.html`** — SRNG / CE / interrupt architecture  
 - **`cldi-testbed/`** — two-board baseline↔candidate runner (sim + SSH)  
 - **`gifts/My_Pet_Fish_by_Chloe.mp4`** — narrated gift short  

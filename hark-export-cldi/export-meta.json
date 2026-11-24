@@ -1,0 +1,146 @@
+{
+  "source": "https://hark.com/site/f43d67fc-3b43-4c40-879d-3e76a87f6031?hark_region=us",
+  "capturedAt": "2026-11-24T01:39:10.247Z",
+  "title": "Hark",
+  "meta": {
+    "title": "Hark",
+    "url": "https://hark.com/site/f43d67fc-3b43-4c40-879d-3e76a87f6031?hark_region=us",
+    "textSample": "",
+    "hasCanvas": true,
+    "canvasCount": 2,
+    "glfail": false
+  },
+  "discover": [
+    "Notifications alt+T"
+  ],
+  "jsonResponses": [
+    {
+      "url": "https://hark.com/cdn-cgi/rum?",
+      "ct": "text/plain",
+      "status": 204,
+      "file": "resp_0_rum",
+      "len": 0
+    },
+    {
+      "url": "https://hark.com/api/strings/hark-card?lang=en",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_1_hark-card",
+      "len": 12783
+    },
+    {
+      "url": "https://hark.com/api/auth/get-session",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_2_get-session",
+      "len": 4
+    },
+    {
+      "url": "https://hark.com/api/sky/air-quality?latitude=37.3688&longitude=-122.0363&current=us_aqi,aerosol_optical_depth",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_3_air-quality",
+      "len": 356
+    },
+    {
+      "url": "https://hark.com/api/sky/forecast?latitude=37.3688&longitude=-122.0363&current=temperature_2m,weather_code,cloud_cover,is_day,wind_speed_10m,wind_direction_10m,relative_humidity_2m,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_gusts_10m&hourly=visibility,direct_radiation,diffuse_radiation,shortwave_radiation,terrestrial_radiation,snow_depth,cape&forecast_hours=2&timezone=auto",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_4_forecast",
+      "len": 1226
+    },
+    {
+      "url": "https://hark.com/api/auth/get-session",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_5_get-session",
+      "len": 4
+    },
+    {
+      "url": "https://hark.com/cdn-cgi/challenge-platform/h/b/jsd/oneshot/f8df4d4a0cd6/0.2536024408959556:1795479928:eaML93XP-DzeWLI5JK45WTh_x3ip9OtyXh2XG55x5Ks/a5f4b1ebdced5f97",
+      "ct": "text/plain",
+      "status": 200,
+      "file": "resp_6_a5f4b1ebdced5f97",
+      "len": 0
+    },
+    {
+      "url": "https://hark.com/api/sky/skyglow/11/12",
+      "ct": "image/png",
+      "status": 200,
+      "file": "resp_7_12",
+      "len": 220231
+    },
+    {
+      "url": "https://hark.com/_mp/track/?ip=1&_=1795484316865",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_8_track",
+      "len": 1
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-TK219R2YVB&gtm=45je6bh1v9245443807za200zd9245443807xf1&_p=1795484316173&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=251921151.1795484317&frm=0&ngs=1&pscdl=noapi&rcb=2&sr=800x600&uaa=&uab=&uafvl=&uam=&uamb=0&uap=&uapv=&uaw=0&ul=en-us&_s=1&tag_exp=115938465~115938469~120213116~120385422~120469145~120469153~121246026~121246034&dl=https%3A%2F%2Fhark.com%2Fsite%2F%3AprojectId&dr=&dp=%2Fsite%2F%3AprojectId&dt=Hark&sid=1795484316&sct=1&seg=0&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1468",
+      "ct": "text/plain",
+      "status": 204,
+      "file": "resp_9_collect",
+      "len": 0
+    },
+    {
+      "url": "https://api.hark.com/v1/flags/flags/?v=2&ip=0&_=1795484316869&ver=1.356.1&compression=base64",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_10_flags",
+      "len": 19963
+    },
+    {
+      "url": "https://o4510648210358272.ingest.us.sentry.io/api/4511862215475200/envelope/?sentry_version=7&sentry_key=2b72ef3002e2bf3ec244ec81be7aa1f9&sentry_client=sentry.javascript.react%2F10.71.0",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_11_envelope",
+      "len": 2
+    },
+    {
+      "url": "https://hark.com/api/sky/skyglow/11/13",
+      "ct": "image/png",
+      "status": 200,
+      "file": "resp_12_13",
+      "len": 299049
+    },
+    {
+      "url": "https://hark.com/api/otlp/v1/traces",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_13_traces",
+      "len": 21
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-TK219R2YVB&gtm=45je6bh1v9245443807za200zd9245443807xf1&_p=1795484316173&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&cid=251921151.1795484317&frm=0&ngs=1&pscdl=noapi&rcb=2&sr=800x600&uaa=&uab=&uafvl=&uam=&uamb=0&uap=&uapv=&uaw=0&ul=en-us&_s=2&tag_exp=115938465~115938469~120213116~120385422~120469145~120469153~121246026~121246034&dl=https%3A%2F%2Fhark.com%2Fsite%2F%3AprojectId&dr=&sid=1795484316&sct=1&seg=0&dt=Hark&en=scroll&epn.percent_scrolled=90&_et=6&tfd=6478",
+      "ct": "text/plain",
+      "status": 204,
+      "file": "resp_14_collect",
+      "len": 0
+    },
+    {
+      "url": "https://hark.com/api/otlp/v1/traces",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_15_traces",
+      "len": 21
+    },
+    {
+      "url": "https://hark.com/_mp/track/?verbose=1&ip=1&_=1795484331868",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_16_track",
+      "len": 25
+    },
+    {
+      "url": "https://hark.com/api/otlp/v1/metrics",
+      "ct": "application/json",
+      "status": 200,
+      "file": "resp_17_metrics",
+      "len": 21
+    }
+  ],
+  "screenshots": 15,
+  "axTextCount": 3
+}
