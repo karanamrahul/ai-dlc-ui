@@ -39,7 +39,8 @@ pip install -r requirements.txt
 FIXTURE_MODE=1 python demo/run_demo.py
 ```
 
-- **`hiring/index.html`** / **`web/guide.html`** — Patch QA storyboard  
+- **`hiring/index.html`** / **`web/guide.html`** — Patch QA storyboard
+- **`CLDI-time-machine.html`** / **`hiring/CLDI-time-machine.html`** — CLDI Time Machine (feature 0 → hero CR journey)  
 - **`web/rings.html`** — SRNG / CE / interrupt architecture  
 - **`cldi-testbed/`** — two-board baseline↔candidate runner (sim + SSH)  
 - **`gifts/My_Pet_Fish_by_Chloe.mp4`** — narrated gift short  
